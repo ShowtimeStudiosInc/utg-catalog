@@ -132,7 +132,7 @@ export default function StatsPage() {
                 {stats?.soulTraitDistribution?.map((item: any) => (
                   <div key={item.trait} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <SoulTraitIcon trait={item.trait} size={24} />
+                      <SoulTraitIcon trait={item.trait} size={24} decorative />
                       <span className="text-[#a0a0a0]">{item.trait}</span>
                     </div>
                     <div className="text-white font-bold">{item.count}</div>

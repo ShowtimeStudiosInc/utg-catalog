@@ -92,7 +92,7 @@ const CustomNode = ({ data }: NodeProps<FlowNode>) => {
         {data.data.soulTrait && (
           <Badge className="deltarune-badge text-white text-xs" style={{ backgroundColor: '#ff6b6b', borderColor: '#ff6b6b' }}>
             <span className="inline-flex items-center gap-1.5">
-              <SoulTraitIcon trait={data.data.soulTrait} size={14} />
+              <SoulTraitIcon trait={data.data.soulTrait} size={14} decorative />
               <span>{data.data.soulTrait}</span>
             </span>
           </Badge>

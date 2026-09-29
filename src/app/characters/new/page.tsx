@@ -239,7 +239,7 @@ export default function NewCharacterPage() {
                         ].map((trait) => (
                           <SelectItem key={trait} value={trait} className="text-white hover:bg-[#2a2a5a]">
                             <span className="inline-flex items-center gap-2">
-                              <SoulTraitIcon trait={trait} size={18} />
+                              <SoulTraitIcon trait={trait} size={18} decorative />
                               <span>{trait}</span>
                             </span>
                           </SelectItem>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChartNoAxesColumnIncreasing,
   Package,
@@ -23,7 +24,18 @@ export default function Home() {
       <div className="home-page__content container mx-auto px-4 py-16">
         <header className="home-page__header">
           <p className="home-page__eyebrow">ROLEPLAY ARCHIVE</p>
-          <h1 className="home-page__title retro-glow">UTG CATALOG</h1>
+          <h1 className="home-page__title retro-glow">
+            <Image
+              className="home-page__logo"
+              src="/images/utg-logo.png"
+              alt=""
+              aria-hidden="true"
+              width={125}
+              height={125}
+              priority
+            />
+            <span>UTG CATALOG</span>
+          </h1>
           <p className="home-page__tagline">Your world. Your data.</p>
         </header>
 

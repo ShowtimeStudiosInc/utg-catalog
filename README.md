@@ -8,7 +8,7 @@ directions without depending on scrolling. Grid animation respects reduced
 motion preferences. Controls use orange `#FF7F27` with yellow `#FFFF00`
 hover and keyboard-focus states. The home menu uses compact destination
 buttons with replaceable local iconography; upcoming brand artwork and custom
-cell sprites are not included yet. The supplied individuality icon is bundled locally; no visual assets are fetched from third-party services. The catalog also includes a bundled soul trait sprite set under `public/images/soul-traits/` for Individuality, Patience, Bravery, Integrity, Perseverance, Kindness, and Justice. These 48×48 PNGs preserve the original pixel art and are used in character selection, stats, list, detail, and graph views.
+cell sprites are not included yet. The supplied individuality icon is bundled locally; no visual assets are fetched from third-party services. The catalog also includes a bundled soul trait sprite set under `public/images/soul-traits/` for Individuality, Patience, Bravery, Integrity, Perseverance, Kindness, and Justice. These 90×90 PNGs preserve the original pixel art and are used in character selection, stats, list, detail, and graph views.
 
 ## Browser app
 

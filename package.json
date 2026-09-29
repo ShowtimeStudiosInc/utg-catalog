@@ -74,12 +74,15 @@
     ],
     "publish": null,
     "win": {
+      "icon": "assets/icon.ico",
       "target": "nsis"
     },
     "mac": {
+      "icon": "assets/icon.icns",
       "target": "dmg"
     },
     "linux": {
+      "icon": "assets/icon.png",
       "target": "AppImage"
     }
   }

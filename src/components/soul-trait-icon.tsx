@@ -6,6 +6,7 @@ type SoulTraitIconProps = {
   size?: number;
   className?: string;
   showText?: boolean;
+  decorative?: boolean;
   textClassName?: string;
 };
 
@@ -14,6 +15,7 @@ export function SoulTraitIcon({
   size = 18,
   className = "",
   showText = false,
+  decorative = false,
   textClassName = "",
 }: SoulTraitIconProps) {
   const sprite = getSoulTraitSprite(trait);
@@ -26,8 +28,7 @@ export function SoulTraitIcon({
     <span className={`inline-flex items-center gap-1.5 ${className}`.trim()}>
       <Image
         src={sprite.path}
-        alt={`${trait} soul trait`}
-        aria-label={`${trait} soul trait`}
+        alt={decorative || showText ? "" : sprite.label}
         width={size}
         height={size}
         className="soul-trait-icon"

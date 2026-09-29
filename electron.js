@@ -7,7 +7,12 @@ const path = require('node:path');
 const isDev = !app.isPackaged;
 const projectPath = app.getAppPath();
 const preloadPath = path.join(projectPath, 'preload.js');
-const iconPath = path.join(projectPath, 'assets', 'icon.ico');
+const iconPaths = {
+  win32: path.join(projectPath, 'assets', 'icon.ico'),
+  darwin: path.join(projectPath, 'assets', 'icon.icns'),
+  linux: path.join(projectPath, 'assets', 'icon.png'),
+};
+const iconPath = iconPaths[process.platform];
 const startupTimeoutMs = 60_000;
 
 let mainWindow = null;
@@ -310,7 +315,7 @@ function createWindow() {
     },
   };
 
-  if (fs.existsSync(iconPath)) options.icon = iconPath;
+  if (iconPath && fs.existsSync(iconPath)) options.icon = iconPath;
 
   mainWindow = new BrowserWindow(options);
   const allowedOrigin = new URL(appUrl).origin;

@@ -85,7 +85,7 @@ export default function CharactersPage() {
                         }}
                       >
                         <span className="inline-flex items-center gap-2">
-                          <SoulTraitIcon trait={character.soulTrait} size={16} />
+                          <SoulTraitIcon trait={character.soulTrait} size={16} decorative />
                           <span>{character.soulTrait}</span>
                         </span>
                       </Badge>

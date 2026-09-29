@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -48,7 +49,15 @@ export function AppNavigation() {
         </button>
       )}
       <Link className="app-navigation__brand" href="/" aria-label="UTG Catalog home">
-        UTG CATALOG
+        <Image
+          className="app-navigation__logo"
+          src="/images/utg-logo.png"
+          alt=""
+          aria-hidden="true"
+          width={125}
+          height={125}
+        />
+        <span>UTG CATALOG</span>
       </Link>
       <nav className="app-navigation__links" aria-label="Main navigation">
         {sections.map(([label, href]) => (
