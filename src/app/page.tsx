@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 const destinations = [
-  { label: "CHARACTERS", href: "/characters", icon: Users },
+  { label: "CHARACTER", href: "/characters", icon: Users },
   { label: "ITEMS", href: "/items", icon: Package },
   { label: "ABILITIES", href: "/abilities", icon: Sparkles },
   { label: "GRAPH VIEW", href: "/graph", icon: Share2 },
