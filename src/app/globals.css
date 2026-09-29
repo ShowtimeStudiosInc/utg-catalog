@@ -133,8 +133,8 @@ input[type="reset"]:not(:disabled) {
   border-width: 2px;
   border-radius: 2px;
   border-color: var(--accent);
-  background-color: var(--accent);
-  color: var(--accent-ink);
+  background-color: #080808;
+  color: var(--accent);
 }
 
 button:not(:disabled):hover,
@@ -165,9 +165,9 @@ input[type="reset"]:not(:disabled):focus-visible {
   min-height: 40px;
   border: 2px solid var(--accent) !important;
   border-radius: 3px !important;
-  background: var(--accent) !important;
+  background: #080808 !important;
   box-shadow: 3px 3px 0 #050810;
-  color: var(--accent-ink) !important;
+  color: var(--accent) !important;
   font-family: "DTM Mono", monospace;
   font-size: 0.9rem !important;
   font-weight: 800;
@@ -361,9 +361,9 @@ input[type="reset"]:disabled {
   align-items: center;
   gap: 0.85rem;
   border: 2px solid var(--accent);
-  background: var(--accent);
+  background: #080808;
   box-shadow: 3px 3px 0 #050810;
-  color: var(--accent-ink);
+  color: var(--accent);
   padding: 0.75rem 0.85rem;
   font-size: 0.92rem;
   font-weight: 900;
@@ -443,8 +443,8 @@ input[type="reset"]:disabled {
   flex: 0 0 auto;
   border: 2px solid var(--accent);
   border-radius: 2px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: #080808;
+  color: var(--accent);
   cursor: pointer;
   font-weight: 700;
   padding: 0.35rem 0.65rem;
@@ -470,8 +470,8 @@ input[type="reset"]:disabled {
 .app-navigation__link {
   border: 2px solid var(--accent);
   border-radius: 2px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: #080808;
+  color: var(--accent);
   font-size: 0.9rem;
   font-weight: 700;
   padding: 0.35rem 0.55rem;
@@ -512,8 +512,8 @@ input[type="reset"]:disabled {
   place-items: center;
   border: 2px solid var(--accent);
   border-radius: 3px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: #080808;
+  color: var(--accent);
   cursor: pointer;
   padding: 0.4rem;
   text-align: center;
