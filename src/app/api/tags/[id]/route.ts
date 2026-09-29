@@ -54,8 +54,17 @@ export async function PUT(
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid tag.' }, { status: 400 });
     }
-    if (parsed.data.emojiFilename && !(await readEmoji(parsed.data.emojiFilename))) {
-      return NextResponse.json({ error: 'The selected emoji is no longer available.' }, { status: 400 });
+    if (parsed.data.emojiFilename) {
+      const [emojiRecord, emojiImage] = await Promise.all([
+        prisma.customEmoji.findUnique({
+          where: { fileName: parsed.data.emojiFilename },
+          select: { fileName: true },
+        }),
+        readEmoji(parsed.data.emojiFilename),
+      ]);
+      if (!emojiRecord || !emojiImage) {
+        return NextResponse.json({ error: 'The selected emoji is no longer available.' }, { status: 400 });
+      }
     }
 
     const tag = await prisma.tag.update({

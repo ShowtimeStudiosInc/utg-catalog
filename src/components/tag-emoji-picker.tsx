@@ -3,9 +3,12 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Emoji = {
   fileName: string;
+  name: string;
   mimeType: string;
   size: number;
   width: number;
@@ -31,6 +34,7 @@ async function fetchEmojis(): Promise<Emoji[]> {
 export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
   const queryClient = useQueryClient();
   const [localError, setLocalError] = useState("");
+  const [emojiName, setEmojiName] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
   const { data: emojis = [], isLoading, error: queryError } = useQuery({
     queryKey: ["custom-emojis"],
@@ -41,12 +45,14 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.set("file", file);
+      formData.set("name", emojiName.trim().toLowerCase());
       const response = await fetch("/api/emojis", { method: "POST", body: formData });
       if (!response.ok) throw new Error(await responseError(response));
       return response.json() as Promise<Emoji>;
     },
     onSuccess: async (emoji) => {
       onChange(emoji.fileName);
+      setEmojiName("");
       await queryClient.invalidateQueries({ queryKey: ["custom-emojis"] });
     },
     onSettled: () => {
@@ -69,6 +75,10 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
   function uploadEmoji(file?: File) {
     if (!file) return;
     setLocalError("");
+    if (!/^[a-zA-Z0-9_-]{1,32}$/.test(emojiName.trim())) {
+      setLocalError("Add a short name using letters, numbers, underscores, or hyphens.");
+      return;
+    }
     if (file.size > 1024 * 1024) {
       setLocalError("Emoji images must be 1 MB or smaller.");
       return;
@@ -89,7 +99,20 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
           <p className="font-bold text-white">TAG EMOJI</p>
           <p className="text-sm text-[#b5bdcc]">Optional image, stored in your local app data.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-end gap-2">
+          <div className="min-w-[12rem] flex-1">
+            <Label htmlFor="custom-emoji-name" className="text-sm text-white">Emoji name</Label>
+            <Input
+              id="custom-emoji-name"
+              value={emojiName}
+              maxLength={32}
+              onChange={(event) => setEmojiName(event.target.value)}
+              className="deltarune-input mt-1"
+              placeholder="e.g. sparkles"
+              autoComplete="off"
+              aria-describedby="custom-emoji-name-help"
+            />
+          </div>
           <label className="deltarune-button inline-flex cursor-pointer items-center px-3 py-2">
             {uploadMutation.isPending ? "UPLOADING..." : "UPLOAD IMAGE"}
             <input
@@ -109,6 +132,9 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
           )}
         </div>
       </div>
+      <p id="custom-emoji-name-help" className="text-xs text-[#b5bdcc]">
+        Letters, numbers, underscores, or hyphens · up to 32 characters
+      </p>
 
       {queryError && (
         <div className="emoji-picker-error" role="alert">
@@ -131,7 +157,7 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
                 className="emoji-picker-option w-full"
                 type="button"
                 aria-pressed={value === emoji.fileName}
-                aria-label={`Assign emoji ${emoji.fileName}`}
+                aria-label={`Assign emoji :${emoji.name}:`}
                 onClick={() => onChange(value === emoji.fileName ? null : emoji.fileName)}
               >
                 <Image
@@ -141,12 +167,12 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
                   height={36}
                   unoptimized
                 />
-                <span>{emoji.fileName.slice(0, 8)}</span>
+                <span>:{emoji.name}:</span>
               </button>
               <button
                 className="emoji-picker-delete absolute right-1 top-1 rounded border border-[#63728a] bg-[#0b1220] px-1 text-xs text-white hover:border-[#ff8792] hover:text-[#ff9aa4]"
                 type="button"
-                aria-label={`Delete emoji ${emoji.fileName}`}
+                aria-label={`Delete emoji :${emoji.name}:`}
                 title="Delete from library"
                 disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(emoji.fileName)}

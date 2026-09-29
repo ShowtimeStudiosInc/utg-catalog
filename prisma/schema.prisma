@@ -172,6 +172,18 @@ model Tag {
   @@index([category])
 }
 
+model CustomEmoji {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  fileName  String   @unique
+  mimeType  String
+  width     Int
+  height    Int
+  size      Int
+  createdAt DateTime @default(now())
+
+}
+
 model CharacterTag {
   id          String    @id @default(cuid())
   characterId String

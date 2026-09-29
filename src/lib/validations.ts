@@ -120,6 +120,13 @@ export const tagSchema = z.object({
   ).nullable().optional(),
 })
 
+export const customEmojiNameSchema = z.string()
+  .trim()
+  .min(1, "Emoji name is required")
+  .max(32, "Emoji names must be 32 characters or fewer")
+  .regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, underscores, or hyphens")
+  .transform((name) => name.toLowerCase())
+
 export type CharacterInput = z.infer<typeof characterSchema>
 export type ItemInput = z.infer<typeof itemSchema>
 export type AbilityInput = z.infer<typeof abilitySchema>

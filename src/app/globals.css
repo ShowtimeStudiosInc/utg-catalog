@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   color-scheme: dark;
@@ -529,6 +527,8 @@ select {
     grid-row: 2;
     width: 100%;
     margin-left: 0;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 }
 

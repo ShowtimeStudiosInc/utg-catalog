@@ -10,12 +10,20 @@ export async function GET(
 ) {
   try {
     const { fileName } = await params;
+    if (!isSafeEmojiFileName(fileName)) {
+      return new Response("Emoji not found.", { status: 404 });
+    }
+    const record = await prisma.customEmoji.findUnique({
+      where: { fileName },
+      select: { mimeType: true },
+    });
+    if (!record) return new Response("Emoji not found.", { status: 404 });
     const emoji = await readEmoji(fileName);
     if (!emoji) return new Response("Emoji not found.", { status: 404 });
 
     return new Response(Uint8Array.from(emoji.bytes), {
       headers: {
-        "Content-Type": emoji.image.mimeType,
+        "Content-Type": record.mimeType,
         "Cache-Control": "private, max-age=31536000, immutable",
         "X-Content-Type-Options": "nosniff",
       },
@@ -36,6 +44,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid emoji identifier." }, { status: 400 });
     }
 
+    const record = await prisma.customEmoji.findUnique({
+      where: { fileName },
+      select: { fileName: true },
+    });
+    if (!record) {
+      return NextResponse.json({ error: "Emoji not found." }, { status: 404 });
+    }
+
     const assignedTag = await prisma.tag.findFirst({ where: { emojiFilename: fileName } });
     if (assignedTag) {
       return NextResponse.json(
@@ -44,9 +60,8 @@ export async function DELETE(
       );
     }
 
-    if (!(await removeEmoji(fileName))) {
-      return NextResponse.json({ error: "Emoji not found." }, { status: 404 });
-    }
+    await removeEmoji(fileName);
+    await prisma.customEmoji.delete({ where: { fileName } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting custom emoji:", error);
