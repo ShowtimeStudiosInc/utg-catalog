@@ -295,23 +295,23 @@ input[type="reset"]:disabled {
     url("/images/text-box/bottom-right.png") !important;
   background-position:
     left top,
-    left top,
+    59px top,
     right top,
-    left top,
-    left top,
-    right top,
+    left 56px,
+    59px 56px,
+    right 56px,
     left bottom,
-    left bottom,
+    59px bottom,
     right bottom;
   background-size:
     59px 56px,
+    max(0px, calc(100% - 118px)) 56px,
     59px 56px,
+    59px max(0px, calc(100% - 112px)),
+    max(0px, calc(100% - 118px)) max(0px, calc(100% - 112px)),
+    59px max(0px, calc(100% - 112px)),
     59px 56px,
-    59px 56px,
-    59px 56px,
-    59px 56px,
-    59px 56px,
-    59px 56px,
+    max(0px, calc(100% - 118px)) 56px,
     59px 56px;
   background-repeat:
     no-repeat,
@@ -783,6 +783,12 @@ input[type="reset"]:disabled {
   border: 2px solid #ffffff !important;
   border-radius: 0 !important;
   background: #000000 !important;
+}
+
+.graph-legend-panel {
+  max-width: calc(100% - 1rem);
+  max-height: calc(100% - 1rem);
+  overflow: auto;
 }
 
 .deltarune-badge {

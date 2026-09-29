@@ -130,7 +130,7 @@ export default function TagsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="tags-page__heading mb-8 flex flex-wrap items-center justify-between gap-4">
           <div className="tags-page__intro">
-            <p className="tags-page__eyebrow mb-2 text-sm font-bold tracking-[0.18em] text-[#f5cf69]">LIBRARY / LABELS</p>
+            <p className="tags-page__eyebrow mb-2 text-sm font-bold tracking-[0.18em] text-white">LIBRARY / LABELS</p>
             <h1 className="tags-page__title retro-glow mb-2 text-4xl text-white">TAGS</h1>
             <p className="tags-page__description text-xl text-[#b5bdcc]">Sort your world and give its labels a visual signature.</p>
           </div>

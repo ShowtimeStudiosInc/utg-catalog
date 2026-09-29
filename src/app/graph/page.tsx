@@ -273,29 +273,28 @@ export default function GraphPage() {
               nodeStrokeWidth={2}
             />
             <Background color="#1a1a3a" gap={16} />
+            <Panel position="top-right" className="graph-legend-panel">
+              <Card className="deltarune-card">
+                <CardHeader>
+                  <CardTitle className="text-white text-sm">Legend</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#e94560' }} />
+                    <span className="text-[#a0a0a0] text-sm">Character</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#4ecdc4' }} />
+                    <span className="text-[#a0a0a0] text-sm">Item</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ffd93d' }} />
+                    <span className="text-[#a0a0a0] text-sm">Ability</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Panel>
           </ReactFlow>
-        </div>
-
-        <div className="absolute bottom-4 right-4">
-          <Card className="deltarune-card">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Legend</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#e94560' }} />
-                <span className="text-[#a0a0a0] text-sm">Character</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#4ecdc4' }} />
-                <span className="text-[#a0a0a0] text-sm">Item</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ffd93d' }} />
-                <span className="text-[#a0a0a0] text-sm">Ability</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
