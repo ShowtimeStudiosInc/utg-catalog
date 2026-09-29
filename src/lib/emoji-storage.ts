@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export const MAX_EMOJI_BYTES = 1024 * 1024;
@@ -17,6 +17,8 @@ export type StoredEmoji = EmojiImage & {
   fileName: string;
   size: number;
 };
+
+export type EmojiLibraryEntry = Pick<StoredEmoji, "fileName" | "mimeType" | "size">;
 
 const fileNamePattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(png|gif|jpg|webp)$/i;
@@ -169,7 +171,7 @@ export async function saveEmoji(bytes: Buffer, image: EmojiImage): Promise<Store
   return { ...image, fileName, size: bytes.byteLength };
 }
 
-export async function listEmojis(): Promise<StoredEmoji[]> {
+export async function listEmojis(): Promise<EmojiLibraryEntry[]> {
   const directory = getEmojiDirectory();
   await mkdir(directory, { recursive: true });
   const names = await readdir(directory);
@@ -178,10 +180,13 @@ export async function listEmojis(): Promise<StoredEmoji[]> {
   for (const fileName of names) {
     if (!isSafeEmojiFileName(fileName)) continue;
     const filePath = path.join(directory, fileName);
-    const info = await stat(filePath);
+    const info = await lstat(filePath);
     if (!info.isFile() || info.size > MAX_EMOJI_BYTES) continue;
-    const image = inspectEmojiImage(await readFile(filePath));
-    if (image) emojis.push({ ...image, fileName, size: info.size });
+    const extension = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
+    const mimeType = extension === "jpg"
+      ? "image/jpeg"
+      : `image/${extension}` as EmojiImage["mimeType"];
+    emojis.push({ fileName, mimeType, size: info.size });
   }
 
   return emojis.sort((left, right) => left.fileName.localeCompare(right.fileName));
@@ -193,7 +198,10 @@ export async function readEmoji(fileName: string): Promise<{
 } | null> {
   if (!isSafeEmojiFileName(fileName)) return null;
   try {
-    const bytes = await readFile(path.join(getEmojiDirectory(), fileName));
+    const filePath = path.join(getEmojiDirectory(), fileName);
+    const info = await lstat(filePath);
+    if (!info.isFile() || info.size > MAX_EMOJI_BYTES) return null;
+    const bytes = await readFile(filePath);
     const image = inspectEmojiImage(bytes);
     return image ? { bytes, image } : null;
   } catch (error) {

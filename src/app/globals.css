@@ -34,7 +34,7 @@ body {
     linear-gradient(#ffffff05 1px, transparent 1px),
     linear-gradient(90deg, #ffffff05 1px, transparent 1px);
   background-size: auto, 24px 24px, 24px 24px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Courier New", monospace;
   font-size: 17px;
   line-height: 1.55;
 }
