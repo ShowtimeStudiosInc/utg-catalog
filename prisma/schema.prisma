@@ -162,6 +162,7 @@ model Tag {
   name        String    @unique
   color       String    @default("#3b82f6") // Hex color
   category    String?   // Character, Item, Ability, or custom
+  emojiFilename String?
   createdAt   DateTime  @default(now())
   
   characterTags CharacterTag[]

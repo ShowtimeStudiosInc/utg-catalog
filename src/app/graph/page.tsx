@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { TagLabel } from "@/components/tag-label";
 
 type GraphApiNode = {
   id: string;
@@ -31,7 +32,7 @@ type GraphApiNode = {
     soulTrait?: string | null;
     itemType?: string;
     complexity?: string | null;
-    tags: { name: string }[];
+    tags: { name: string; emojiFilename?: string | null }[];
   };
 };
 
@@ -51,7 +52,7 @@ type GraphResponse = {
   totalAbilities: number;
 };
 
-type TagOption = { id: string; name: string; color: string };
+type TagOption = { id: string; name: string; color: string; emojiFilename: string | null };
 type FlowNode = Node<GraphApiNode, 'custom'>;
 
 async function fetchGraphData(type?: string, tag?: string): Promise<GraphResponse> {
@@ -232,7 +233,7 @@ export default function GraphPage() {
                           className="w-3 h-3 rounded"
                           style={{ backgroundColor: tag.color }}
                         />
-                        {tag.name}
+                        <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
                       </div>
                     </SelectItem>
                   ))}

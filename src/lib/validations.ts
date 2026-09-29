@@ -111,9 +111,13 @@ export const abilitySchema = z.object({
 
 // Tag validation schema
 export const tagSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().trim().min(1, "Name is required").max(80),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").default("#3b82f6"),
   category: z.string().optional(),
+  emojiFilename: z.string().regex(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(png|gif|jpg|webp)$/i,
+    "Invalid emoji",
+  ).nullable().optional(),
 })
 
 export type CharacterInput = z.infer<typeof characterSchema>

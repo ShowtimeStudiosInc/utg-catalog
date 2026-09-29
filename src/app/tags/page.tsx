@@ -1,305 +1,284 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, type FormEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TagEmojiPicker } from "@/components/tag-emoji-picker";
+import { TagLabel } from "@/components/tag-label";
 
-async function fetchTags() {
-  const response = await fetch('/api/tags');
-  if (!response.ok) throw new Error('Failed to fetch tags');
-  return response.json();
+type Tag = {
+  id: string;
+  name: string;
+  color: string;
+  category: string | null;
+  emojiFilename: string | null;
+  characterCount: number;
+  itemCount: number;
+  abilityCount: number;
+  totalCount: number;
+};
+
+type TagInput = Pick<Tag, "name" | "color"> & {
+  category?: string;
+  emojiFilename: string | null;
+};
+
+async function readResponse<T>(response: Response): Promise<T> {
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "The tag request failed.");
+  return body as T;
 }
 
-async function createTag(data: { name: string; color: string; category?: string }) {
-  const response = await fetch('/api/tags', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Failed to create tag');
-  return response.json();
+async function fetchTags(): Promise<Tag[]> {
+  return readResponse(await fetch("/api/tags"));
+}
+
+async function saveTag(tag: TagInput, id?: string): Promise<Tag> {
+  return readResponse(await fetch(id ? `/api/tags/${id}` : "/api/tags", {
+    method: id ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(tag),
+  }));
 }
 
 async function deleteTag(id: string) {
-  const response = await fetch(`/api/tags/${id}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Failed to delete tag');
-  return response.json();
+  return readResponse(await fetch(`/api/tags/${id}`, { method: "DELETE" }));
 }
 
 export default function TagsPage() {
   const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState('#3b82f6');
-  const [newTagCategory, setNewTagCategory] = useState('');
-
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState("#d7b968");
+  const [category, setCategory] = useState("");
+  const [emojiFilename, setEmojiFilename] = useState<string | null>(null);
   const { data: tags, isLoading, error } = useQuery({
-    queryKey: ['tags'],
+    queryKey: ["tags"],
     queryFn: fetchTags,
   });
 
-  const createMutation = useMutation({
-    mutationFn: createTag,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      setIsDialogOpen(false);
-      setNewTagName('');
-      setNewTagColor('#3b82f6');
-      setNewTagCategory('');
+  const saveMutation = useMutation({
+    mutationFn: () => saveTag({
+      name: name.trim(),
+      color,
+      category: category.trim() || undefined,
+      emojiFilename,
+    }, editingTag?.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["tags"] });
+      setDialogOpen(false);
+      resetForm();
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteTag,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tags"] }),
   });
 
-  const handleCreateTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTagName.trim()) return;
-    createMutation.mutate({
-      name: newTagName,
-      color: newTagColor,
-      category: newTagCategory || undefined,
-    });
-  };
+  function resetForm() {
+    setEditingTag(null);
+    setName("");
+    setColor("#d7b968");
+    setCategory("");
+    setEmojiFilename(null);
+  }
+
+  function openCreate() {
+    resetForm();
+    setDialogOpen(true);
+  }
+
+  function openEdit(tag: Tag) {
+    setEditingTag(tag);
+    setName(tag.name);
+    setColor(tag.color);
+    setCategory(tag.category || "");
+    setEmojiFilename(tag.emojiFilename);
+    setDialogOpen(true);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (name.trim()) saveMutation.mutate();
+  }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#1a1a2e] pixel-border">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-[#a0a0a0] text-2xl">LOADING...</div>
-        </div>
-      </div>
-    );
+    return <div className="page-state" role="status"><div className="page-state__mark">◇</div>Loading tags…</div>;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#1a1a2e] pixel-border">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-[#e94560] text-2xl">ERROR LOADING TAGS</div>
-        </div>
+      <div className="page-state" data-state="error" role="alert">
+        <div className="page-state__mark">!</div>
+        <h1>Unable to load tags</h1>
+        <p>{error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] pixel-border">
+    <div className="min-h-screen pixel-border">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl text-white mb-2 retro-glow">TAGS</h1>
-            <p className="text-[#a0a0a0] text-xl">Manage tags for categorization</p>
+            <p className="mb-2 text-sm font-bold tracking-[0.18em] text-[#f5cf69]">LIBRARY / LABELS</p>
+            <h1 className="retro-glow mb-2 text-4xl text-white">TAGS</h1>
+            <p className="text-xl text-[#b5bdcc]">Sort your world and give its labels a visual signature.</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="deltarune-button text-white">
-                CREATE TAG
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-              <DialogHeader>
-                <DialogTitle className="text-white">Create New Tag</DialogTitle>
-                <DialogDescription className="text-[#a0a0a0]">
-                  Add a new tag for categorizing entities
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateTag} className="space-y-4">
-                <div>
-                  <Label className="text-white">Tag Name</Label>
+          <Button onClick={openCreate} className="deltarune-button text-white">+ CREATE TAG</Button>
+        </div>
+
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogContent className="deltarune-card max-h-[90vh] overflow-y-auto bg-[#111a2b]">
+            <DialogHeader>
+              <DialogTitle className="text-white">{editingTag ? "Edit tag" : "Create a tag"}</DialogTitle>
+              <DialogDescription className="text-[#b5bdcc]">
+                Name, color, and optional custom art stay in your local catalog.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <Label htmlFor="tag-name" className="text-white">Tag name</Label>
+                <Input
+                  id="tag-name"
+                  value={name}
+                  maxLength={80}
+                  onChange={(event) => setName(event.target.value)}
+                  className="deltarune-input mt-1"
+                  placeholder="e.g. found family"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="tag-color" className="text-white">Color</Label>
+                <div className="mt-1 flex gap-2">
                   <Input
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                    placeholder="Tag name"
+                    id="tag-color"
+                    type="color"
+                    value={color}
+                    onChange={(event) => setColor(event.target.value)}
+                    className="deltarune-input h-11 w-16 p-1"
+                    aria-label="Choose tag color"
+                  />
+                  <Input
+                    value={color}
+                    onChange={(event) => setColor(event.target.value)}
+                    className="deltarune-input flex-1"
+                    aria-label="Tag color hex value"
+                    pattern="#[0-9A-Fa-f]{6}"
                     required
                   />
                 </div>
-                <div>
-                  <Label className="text-white">Color</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input
-                      type="color"
-                      value={newTagColor}
-                      onChange={(e) => setNewTagColor(e.target.value)}
-                      className="w-20 h-10 deltarune-input bg-[#1a1a3a] border-[#4a4a8a]"
-                    />
-                    <Input
-                      value={newTagColor}
-                      onChange={(e) => setNewTagColor(e.target.value)}
-                      className="deltarune-input text-white flex-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                      placeholder="#3b82f6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-white">Category (Optional)</Label>
-                  <Input
-                    value={newTagCategory}
-                    onChange={(e) => setNewTagCategory(e.target.value)}
-                    className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                    placeholder="Character, Item, Ability, or custom"
-                  />
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    type="button"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="deltarune-button text-white"
-                    style={{ backgroundColor: '#e94560' }}
-                  >
-                    CANCEL
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={createMutation.isPending}
-                    className="deltarune-button text-white"
-                  >
-                    {createMutation.isPending ? 'CREATING...' : 'CREATE'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tags?.map((tag: any) => (
-            <Card key={tag.id} className="deltarune-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white text-xl">{tag.name}</CardTitle>
-                  <div 
-                    className="w-8 h-8 rounded border-2 border-white"
-                    style={{ backgroundColor: tag.color }}
-                  />
-                </div>
-                <CardDescription className="text-[#a0a0a0]">
-                  {tag.category || 'No category'} • Used {tag.totalCount} times
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#a0a0a0]">Characters:</span>
-                    <span className="text-white">{tag.characterCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#a0a0a0]">Items:</span>
-                    <span className="text-white">{tag.itemCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#a0a0a0]">Abilities:</span>
-                    <span className="text-white">{tag.abilityCount}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Badge 
-                    className="deltarune-badge text-white"
-                    style={{ backgroundColor: tag.color, borderColor: tag.color }}
-                  >
-                    {tag.name}
-                  </Badge>
-                  <Button
-                    onClick={() => deleteMutation.mutate(tag.id)}
-                    disabled={deleteMutation.isPending}
-                    className="deltarune-button text-white ml-auto"
-                    style={{ backgroundColor: '#e94560', fontSize: '0.5rem', padding: '0.25rem 0.5rem' }}
-                  >
-                    DELETE
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {tags?.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-[#a0a0a0] text-2xl mb-4">NO TAGS FOUND</p>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="deltarune-button text-white">
-                  CREATE YOUR FIRST TAG
+              </div>
+              <div>
+                <Label htmlFor="tag-category" className="text-white">Category <span className="text-[#b5bdcc]">(optional)</span></Label>
+                <Input
+                  id="tag-category"
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  className="deltarune-input mt-1"
+                  placeholder="Character, item, ability…"
+                />
+              </div>
+              <TagEmojiPicker value={emojiFilename} onChange={setEmojiFilename} />
+              {saveMutation.error && (
+                <p className="text-sm text-[#ff9aa4]" role="alert">{saveMutation.error.message}</p>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button type="button" onClick={() => setDialogOpen(false)} className="deltarune-button">
+                  CANCEL
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Create New Tag</DialogTitle>
-                  <DialogDescription className="text-[#a0a0a0]">
-                    Add a new tag for categorizing entities
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateTag} className="space-y-4">
-                  <div>
-                    <Label className="text-white">Tag Name</Label>
-                    <Input
-                      value={newTagName}
-                      onChange={(e) => setNewTagName(e.target.value)}
-                      className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                      placeholder="Tag name"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white">Color</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input
-                        type="color"
-                        value={newTagColor}
-                        onChange={(e) => setNewTagColor(e.target.value)}
-                        className="w-20 h-10 deltarune-input bg-[#1a1a3a] border-[#4a4a8a]"
-                      />
-                      <Input
-                        value={newTagColor}
-                        onChange={(e) => setNewTagColor(e.target.value)}
-                        className="deltarune-input text-white flex-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                        placeholder="#3b82f6"
-                      />
+                <Button type="submit" disabled={saveMutation.isPending} className="deltarune-button">
+                  {saveMutation.isPending ? "SAVING…" : editingTag ? "SAVE CHANGES" : "CREATE TAG"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {deleteMutation.error && (
+          <p className="mb-4 border border-[#ad5364] bg-[#331c2a] p-3 text-[#ffb0b8]" role="alert">
+            {deleteMutation.error.message}
+          </p>
+        )}
+
+        {tags?.length ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {tags.map((tag) => (
+              <Card key={tag.id} className="deltarune-card">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-xl text-white">
+                        <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
+                      </CardTitle>
+                      <CardDescription className="mt-2 text-[#b5bdcc]">
+                        {tag.category || "No category"} · Used {tag.totalCount} {tag.totalCount === 1 ? "time" : "times"}
+                      </CardDescription>
                     </div>
-                  </div>
-                  <div>
-                    <Label className="text-white">Category (Optional)</Label>
-                    <Input
-                      value={newTagCategory}
-                      onChange={(e) => setNewTagCategory(e.target.value)}
-                      className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]"
-                      placeholder="Character, Item, Ability, or custom"
+                    <span
+                      className="h-7 w-7 shrink-0 border-2 border-[#d7ddea]"
+                      style={{ backgroundColor: tag.color }}
+                      aria-label={`Tag color ${tag.color}`}
+                      title={tag.color}
                     />
                   </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      type="button"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="deltarune-button text-white"
-                      style={{ backgroundColor: '#e94560' }}
-                    >
-                      CANCEL
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-5 space-y-2 text-sm">
+                    <CountRow label="Characters" count={tag.characterCount} />
+                    <CountRow label="Items" count={tag.itemCount} />
+                    <CountRow label="Abilities" count={tag.abilityCount} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="deltarune-badge border-2 text-white" style={{ backgroundColor: tag.color, borderColor: tag.color }}>
+                      <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
+                    </Badge>
+                    <Button onClick={() => openEdit(tag)} className="deltarune-button ml-auto px-3">
+                      EDIT
                     </Button>
                     <Button
-                      type="submit"
-                      disabled={createMutation.isPending}
-                      className="deltarune-button text-white"
+                      onClick={() => {
+                        if (window.confirm(`Delete the “${tag.name}” tag?`)) deleteMutation.mutate(tag.id);
+                      }}
+                      disabled={deleteMutation.isPending}
+                      className="deltarune-button px-3"
                     >
-                      {createMutation.isPending ? 'CREATING...' : 'CREATE'}
+                      DELETE
                     </Button>
                   </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="page-state">
+            <div className="page-state__mark">◇</div>
+            <h2 className="mb-2 text-2xl text-white">No tags yet</h2>
+            <p className="mb-5">Create a label to bring a little order to your catalog.</p>
+            <Button onClick={openCreate} className="deltarune-button">CREATE YOUR FIRST TAG</Button>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function CountRow({ label, count }: { label: string; count: number }) {
+  return (
+    <div className="flex justify-between border-b border-[#52617a66] pb-1">
+      <span className="text-[#b5bdcc]">{label}</span>
+      <span className="font-bold text-white">{count}</span>
     </div>
   );
 }

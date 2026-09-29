@@ -81,7 +81,7 @@ export default function NewCharacterPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Button 
-            onClick={() => router.back()}
+            onClick={() => router.push('/characters')}
             className="deltarune-button text-white mb-4"
           >
             ← BACK
@@ -361,7 +361,7 @@ export default function NewCharacterPage() {
             </Button>
             <Button 
               type="button" 
-              onClick={() => router.back()}
+              onClick={() => router.push('/characters')}
               className="deltarune-button text-white"
               style={{ backgroundColor: '#e94560' }}
             >

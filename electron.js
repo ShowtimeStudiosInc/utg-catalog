@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, Menu, Tray } = require('electron');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
+const net = require('node:net');
 const path = require('node:path');
 
 const isDev = !app.isPackaged;
@@ -12,7 +13,7 @@ const startupTimeoutMs = 60_000;
 let mainWindow = null;
 let tray = null;
 let serverProcess = null;
-let appUrl = isDev ? 'http://localhost:3000' : null;
+let appUrl = null;
 
 function createDatabaseUrl(databasePath) {
   const normalizedPath = path.resolve(databasePath).replace(/\\/g, '/');
@@ -57,14 +58,15 @@ function copyDirectory(source, destination) {
   }
 }
 
-function createProductionEnvironment() {
+function createServerEnvironment(nodeEnv) {
   const userDataPath = app.getPath('userData');
   fs.mkdirSync(userDataPath, { recursive: true });
 
   const environment = {
     ...process.env,
-    NODE_ENV: 'production',
+    NODE_ENV: nodeEnv,
     NEXT_TELEMETRY_DISABLED: '1',
+    CATALOGER_DATA_DIR: userDataPath,
     DATABASE_URL: createDatabaseUrl(path.join(userDataPath, 'cataloger.db')),
   };
 
@@ -97,6 +99,21 @@ function createProductionEnvironment() {
   return environment;
 }
 
+function getAvailablePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      server.close((error) => {
+        if (error) reject(error);
+        else if (address && typeof address === 'object') resolve(address.port);
+        else reject(new Error('Could not allocate a development server port.'));
+      });
+    });
+  });
+}
+
 function runNodeScript(scriptPath, args, environment) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [scriptPath, ...args], {
@@ -119,6 +136,37 @@ function runNodeScript(scriptPath, args, environment) {
       }
     });
   });
+}
+
+async function migrateDatabase(environment) {
+  const prismaCli = path.join(projectPath, 'node_modules', 'prisma', 'build', 'index.js');
+  let migrationDirectory = null;
+  let schemaPath = path.join(projectPath, 'prisma', 'schema.prisma');
+
+  if (app.isPackaged) {
+    migrationDirectory = fs.mkdtempSync(
+      path.join(app.getPath('userData'), 'cataloger-migrations-'),
+    );
+    const migrationSchemaDirectory = path.join(migrationDirectory, 'prisma');
+    fs.mkdirSync(migrationSchemaDirectory, { recursive: true });
+    fs.copyFileSync(
+      path.join(projectPath, 'prisma', 'schema.prisma'),
+      path.join(migrationSchemaDirectory, 'schema.prisma'),
+    );
+    copyDirectory(
+      path.join(projectPath, 'prisma', 'migrations'),
+      path.join(migrationSchemaDirectory, 'migrations'),
+    );
+    schemaPath = path.join(migrationSchemaDirectory, 'schema.prisma');
+  }
+
+  try {
+    await runNodeScript(prismaCli, ['migrate', 'deploy', '--schema', schemaPath], environment);
+  } finally {
+    if (migrationDirectory) {
+      fs.rmSync(migrationDirectory, { recursive: true, force: true });
+    }
+  }
 }
 
 function waitForServer(child) {
@@ -178,35 +226,37 @@ function waitForServer(child) {
   });
 }
 
-async function startPackagedServer() {
-  const environment = createProductionEnvironment();
+async function waitForDevelopmentServer(child, port) {
+  const url = `http://127.0.0.1:${port}`;
+  const timeoutAt = Date.now() + startupTimeoutMs;
+  child.stdout.on('data', (chunk) => {
+    console.log(`[Cataloger dev server] ${chunk.toString().trimEnd()}`);
+  });
+  child.stderr.on('data', (chunk) => {
+    console.error(`[Cataloger dev server] ${chunk.toString().trimEnd()}`);
+  });
 
-  const prismaCli = path.join(projectPath, 'node_modules', 'prisma', 'build', 'index.js');
-  const migrationDirectory = fs.mkdtempSync(
-    path.join(app.getPath('userData'), 'cataloger-migrations-'),
-  );
-  const migrationSchemaDirectory = path.join(migrationDirectory, 'prisma');
-
-  try {
-    fs.mkdirSync(migrationSchemaDirectory, { recursive: true });
-    fs.copyFileSync(
-      path.join(projectPath, 'prisma', 'schema.prisma'),
-      path.join(migrationSchemaDirectory, 'schema.prisma'),
-    );
-    copyDirectory(
-      path.join(projectPath, 'prisma', 'migrations'),
-      path.join(migrationSchemaDirectory, 'migrations'),
-    );
-
-    await runNodeScript(prismaCli, [
-      'migrate',
-      'deploy',
-      '--schema',
-      path.join(migrationSchemaDirectory, 'schema.prisma'),
-    ], environment);
-  } finally {
-    fs.rmSync(migrationDirectory, { recursive: true, force: true });
+  while (Date.now() < timeoutAt) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(
+        `The development server stopped before it was ready (${child.signalCode || `exit code ${child.exitCode}`}).`,
+      );
+    }
+    try {
+      await fetch(url, { signal: AbortSignal.timeout(1500) });
+      return url;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   }
+
+  child.kill();
+  throw new Error('The development server did not start in time.');
+}
+
+async function startPackagedServer() {
+  const environment = createServerEnvironment('production');
+  await migrateDatabase(environment);
 
   serverProcess = spawn(
     process.execPath,
@@ -220,6 +270,25 @@ async function startPackagedServer() {
   );
 
   return waitForServer(serverProcess);
+}
+
+async function startDevelopmentServer() {
+  const environment = createServerEnvironment('development');
+  await migrateDatabase(environment);
+  const port = await getAvailablePort();
+  const nextCli = path.join(projectPath, 'node_modules', 'next', 'dist', 'bin', 'next');
+
+  serverProcess = spawn(
+    process.execPath,
+    [nextCli, 'dev', '--hostname', '127.0.0.1', '--port', String(port)],
+    {
+      cwd: projectPath,
+      env: { ...environment, ELECTRON_RUN_AS_NODE: '1' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    },
+  );
+  return waitForDevelopmentServer(serverProcess, port);
 }
 
 function createWindow() {
@@ -280,7 +349,9 @@ ipcMain.handle('get-app-data-path', () => app.getPath('userData'));
 
 app.whenReady()
   .then(async () => {
-    if (app.isPackaged) appUrl = await startPackagedServer();
+    appUrl = app.isPackaged
+      ? await startPackagedServer()
+      : await startDevelopmentServer();
     createWindow();
     createTray();
   })

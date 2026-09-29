@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { AppNavigation } from "@/components/app-navigation";
 
 export const metadata: Metadata = {
-  title: "Cataloger - RP Server Note Manager",
+  title: "Cataloger | RP Archive",
   description: "Visual note-taking application for roleplay server management",
 };
 
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AppNavigation />
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );

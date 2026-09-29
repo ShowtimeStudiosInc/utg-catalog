@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TagLabel } from "@/components/tag-label";
 
 async function fetchItem(id: string) {
   const response = await fetch(`/api/items/${id}`);
@@ -38,7 +38,6 @@ async function addTagToItem(itemId: string, tagId: string) {
 }
 
 export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [itemId, setItemId] = useState<string | null>(null);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
@@ -99,12 +98,6 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
       <div className="min-h-screen bg-[#1a1a2e] pixel-border">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-[#e94560] text-2xl">ITEM NOT FOUND</div>
-          <Button 
-            onClick={() => router.back()}
-            className="deltarune-button text-white mt-4"
-          >
-            ← BACK
-          </Button>
         </div>
       </div>
     );
@@ -114,12 +107,6 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Button 
-            onClick={() => router.back()}
-            className="deltarune-button text-white mb-4"
-          >
-            ← BACK
-          </Button>
           <h1 className="text-4xl text-white mb-2 retro-glow">{item.name}</h1>
           <div className="flex gap-2 flex-wrap">
             <Badge 
@@ -171,7 +158,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                               className="w-4 h-4 rounded"
                               style={{ backgroundColor: tag.color }}
                             />
-                            {tag.name}
+                            <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
                           </div>
                         </SelectItem>
                       ))}
@@ -204,7 +191,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                 className="deltarune-badge text-white"
                 style={{ backgroundColor: tag.color, borderColor: tag.color }}
               >
-                {tag.name}
+                <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
               </Badge>
             ))}
             {(!itemTags || itemTags.length === 0) && (

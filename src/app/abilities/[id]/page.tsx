@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TagLabel } from "@/components/tag-label";
 
 async function fetchAbility(id: string) {
   const response = await fetch(`/api/abilities/${id}`);
@@ -39,7 +39,6 @@ async function addTagToAbility(abilityId: string, tagId: string) {
 }
 
 export default function AbilityDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [abilityId, setAbilityId] = useState<string | null>(null);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
@@ -98,12 +97,6 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
       <div className="min-h-screen bg-[#1a1a2e] pixel-border">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-[#e94560] text-2xl">ABILITY NOT FOUND</div>
-          <Button 
-            onClick={() => router.back()}
-            className="deltarune-button text-white mt-4"
-          >
-            ← BACK
-          </Button>
         </div>
       </div>
     );
@@ -113,12 +106,6 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Button 
-            onClick={() => router.back()}
-            className="deltarune-button text-white mb-4"
-          >
-            ← BACK
-          </Button>
           <h1 className="text-4xl text-white mb-2 retro-glow">{ability.name}</h1>
           <div className="flex gap-2 flex-wrap">
             {ability.complexity && (
@@ -177,7 +164,7 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                               className="w-4 h-4 rounded"
                               style={{ backgroundColor: tag.color }}
                             />
-                            {tag.name}
+                            <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
                           </div>
                         </SelectItem>
                       ))}
@@ -210,7 +197,7 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                 className="deltarune-badge text-white"
                 style={{ backgroundColor: tag.color, borderColor: tag.color }}
               >
-                {tag.name}
+                <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
               </Badge>
             ))}
             {(!abilityTags || abilityTags.length === 0) && (

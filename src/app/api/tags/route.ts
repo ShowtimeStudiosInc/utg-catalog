@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { tagSchema } from '@/lib/validations';
+import { readEmoji } from '@/lib/emoji-storage';
 
 // GET all tags
 export async function GET() {
@@ -36,14 +37,23 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = tagSchema.parse(body);
+    const parsed = tagSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid tag.' }, { status: 400 });
+    }
+    if (parsed.data.emojiFilename && !(await readEmoji(parsed.data.emojiFilename))) {
+      return NextResponse.json({ error: 'The selected emoji is no longer available.' }, { status: 400 });
+    }
 
     const tag = await prisma.tag.create({
-      data: validatedData,
+      data: parsed.data,
     });
 
     return NextResponse.json(tag, { status: 201 });
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
     console.error('Error creating tag:', error);
     return NextResponse.json({ error: 'Failed to create tag' }, { status: 500 });
   }

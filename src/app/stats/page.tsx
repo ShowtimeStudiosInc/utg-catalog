@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TagLabel } from "@/components/tag-label";
 
 async function fetchStats() {
   const response = await fetch('/api/stats');
@@ -106,7 +107,9 @@ export default function StatsPage() {
                         className="w-4 h-4 rounded"
                         style={{ backgroundColor: tag.color }}
                       />
-                      <span className="text-[#a0a0a0]">{tag.name}</span>
+                      <span className="text-[#b5bdcc]">
+                        <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
+                      </span>
                     </div>
                     <div className="text-white font-bold">{tag.totalCount}</div>
                   </div>
