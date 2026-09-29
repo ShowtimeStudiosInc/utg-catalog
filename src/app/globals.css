@@ -284,42 +284,6 @@ input[type="reset"]:disabled {
   border-radius: 0 !important;
   background-color: #000000 !important;
   background-image: none !important;
-  /*
-   * The decorative nine-slice is a real grid layered above this black
-   * surface. Keeping the surface itself image-free prevents sprite layers
-   * from overlapping content or one another.
-   */
-  /*
-  background-position:
-    left top,
-    59px top,
-    right top,
-    left 56px,
-    59px 56px,
-    right 56px,
-    left bottom,
-    59px bottom,
-    right bottom;
-  background-size:
-    59px 56px,
-    max(0px, calc(100% - 118px)) 56px,
-    59px 56px,
-    59px max(0px, calc(100% - 112px)),
-    max(0px, calc(100% - 118px)) max(0px, calc(100% - 112px)),
-    59px max(0px, calc(100% - 112px)),
-    59px 56px,
-    max(0px, calc(100% - 118px)) 56px,
-    59px 56px;
-  background-repeat:
-    no-repeat,
-    repeat-x,
-    no-repeat,
-    repeat-y,
-    repeat,
-    repeat-y,
-    no-repeat,
-    repeat-x,
-    no-repeat;*/
   box-shadow: 4px 4px 0 #050810 !important;
 }
 
