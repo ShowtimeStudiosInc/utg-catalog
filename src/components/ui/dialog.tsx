@@ -76,6 +76,7 @@ function DialogContent({
         )}
         {...props}
       >
+        <NineSlice />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close

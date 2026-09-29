@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
+import { NineSlice } from "./nine-slice"
 
 function Card({
   className,
@@ -15,7 +16,10 @@ function Card({
         className
       )}
       {...props}
-    />
+    >
+      <NineSlice />
+      {props.children}
+    </div>
   )
 }
 
