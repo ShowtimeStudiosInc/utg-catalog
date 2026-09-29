@@ -11,6 +11,7 @@
   --gold: #f5cf69;
   --soul: #ff647c;
   --focus: #ffdc78;
+  --app-navigation-height: 66px;
 }
 
 * {
@@ -209,7 +210,6 @@ select {
 }
 
 .app-navigation {
-  --app-navigation-height: 66px;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -503,12 +503,15 @@ select {
 
 @media (max-width: 700px) {
   .app-navigation {
-    --app-navigation-height: 104px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 0.5rem;
     padding: 0.65rem 0.85rem;
+  }
+
+  :root {
+    --app-navigation-height: 147px;
   }
 
   .app-navigation__brand {
@@ -529,6 +532,12 @@ select {
     margin-left: 0;
     flex-wrap: wrap;
     overflow: visible;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --app-navigation-height: 188px;
   }
 }
 

@@ -48,7 +48,7 @@ export default function AbilitiesPage() {
   return (
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-4xl text-white mb-2 retro-glow">ABILITIES</h1>
             <p className="text-[#a0a0a0] text-xl">Define abilities and skills</p>

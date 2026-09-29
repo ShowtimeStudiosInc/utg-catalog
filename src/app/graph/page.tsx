@@ -195,19 +195,19 @@ export default function GraphPage() {
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="h-screen flex flex-col">
         <div className="bg-[#1a1a3a] border-b-2 border-[#4a4a8a] p-4">
-          <div className="container mx-auto flex items-center justify-between">
+          <div className="container mx-auto flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl text-white retro-glow">GRAPH VIEW</h1>
               <p className="text-[#a0a0a0] text-sm">
                 {graphData?.totalCharacters || 0} Characters • {graphData?.totalItems || 0} Items • {graphData?.totalAbilities || 0} Abilities
               </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex w-full flex-wrap gap-2 lg:w-auto">
               <Select
                 value={filterType}
                 onValueChange={(value) => setFilterType(value ?? 'all')}
               >
-                <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a] w-40">
+                <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a] w-full sm:w-40">
                   <SelectValue placeholder="Filter by type" />
                 </SelectTrigger>
                 <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
@@ -221,7 +221,7 @@ export default function GraphPage() {
                 value={filterTag}
                 onValueChange={(value) => setFilterTag(value ?? '')}
               >
-                <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a] w-40">
+                <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a] w-full sm:w-40">
                   <SelectValue placeholder="Filter by tag" />
                 </SelectTrigger>
                 <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
@@ -241,7 +241,7 @@ export default function GraphPage() {
               </Select>
               <Button 
                 onClick={() => { setFilterType('all'); setFilterTag(''); }}
-                className="deltarune-button text-white"
+                className="deltarune-button w-full text-white sm:w-auto"
                 style={{ backgroundColor: '#e94560' }}
               >
                 CLEAR FILTERS

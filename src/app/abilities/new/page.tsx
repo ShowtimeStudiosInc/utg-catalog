@@ -69,7 +69,7 @@ export default function NewAbilityPage() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="main" className="w-full">
-            <TabsList className="deltarune-card w-full mb-6 bg-[#1a1a3a] border-[#4a4a8a]">
+            <TabsList className="deltarune-card h-auto w-full flex-wrap mb-6 bg-[#1a1a3a] border-[#4a4a8a]">
               <TabsTrigger value="main" className="data-[state=active]:bg-[#f9d71c] data-[state=active]:text-black text-white data-[state=inactive]:text-[#a0a0a0]">
                 MAIN INFO
               </TabsTrigger>
