@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,7 +132,17 @@ export default function StatsPage() {
                 {stats?.soulTraitDistribution?.map((item: any) => (
                   <div key={item.trait} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{item.emoji}</span>
+                      {item.trait === "Individuality" ? (
+                        <Image
+                          src="/images/individuality.png"
+                          alt=""
+                          width={24}
+                          height={24}
+                          className="soul-trait-icon"
+                        />
+                      ) : (
+                        <span className="text-xl">{item.emoji}</span>
+                      )}
                       <span className="text-[#a0a0a0]">{item.trait}</span>
                     </div>
                     <div className="text-white font-bold">{item.count}</div>

@@ -2,8 +2,10 @@
 
 RP Cataloger is a Next.js application with an Electron desktop wrapper. The
 browser-based development and production commands remain available alongside
-the desktop app. Its original, high-contrast night-sky interface uses local
-system fonts and does not fetch visual assets from third-party services.
+the desktop app. Its high-contrast interface uses the bundled DTM Mono font,
+black canvas, and two layered pixel grids that move diagonally in opposite
+directions as you scroll. The supplied individuality icon is bundled locally;
+no visual assets are fetched from third-party services.
 
 ## Browser app
 

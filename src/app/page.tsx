@@ -10,7 +10,8 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl text-white mb-4 retro-glow">CATALOGER</h1>
           <p className="text-2xl text-[#a0a0a0] font-bold">RP Server Note Management System</p>
           <div className="mt-4 text-[#f9d71c] text-lg">
-            <span className="soul-heart">❤️</span> Your World, Your Data <span className="soul-heart">❤️</span>
+            <span className="soul-heart" aria-hidden="true" /> Your World, Your Data{" "}
+            <span className="soul-heart" aria-hidden="true" />
           </div>
         </div>
 

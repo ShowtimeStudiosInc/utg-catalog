@@ -25,7 +25,6 @@ export async function GET() {
     // Calculate soul trait distribution
     const soulTraitMap = new Map();
     const soulTraitEmojis: Record<string, string> = {
-      'Individuality': '❤️',
       'Patience': '💙',
       'Bravery': '💛',
       'Integrity': '💚',

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -227,7 +228,10 @@ export default function NewCharacterPage() {
                         <SelectValue placeholder="Select soul trait" />
                       </SelectTrigger>
                       <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectItem value="Individuality" className="text-white hover:bg-[#2a2a5a]">❤️ Individuality</SelectItem>
+                        <SelectItem value="Individuality" className="text-white hover:bg-[#2a2a5a]">
+                          <Image src="/images/individuality.png" alt="" width={18} height={18} className="soul-trait-icon" />
+                          Individuality
+                        </SelectItem>
                         <SelectItem value="Patience" className="text-white hover:bg-[#2a2a5a]">💙 Patience</SelectItem>
                         <SelectItem value="Bravery" className="text-white hover:bg-[#2a2a5a]">💛 Bravery</SelectItem>
                         <SelectItem value="Integrity" className="text-white hover:bg-[#2a2a5a]">💚 Integrity</SelectItem>

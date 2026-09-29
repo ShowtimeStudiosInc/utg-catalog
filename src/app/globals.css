@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "DTM Mono";
+  src: url("/fonts/DTM-Mono.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
-  --night: #080d18;
+  --night: #000000;
   --panel: #111a2b;
   --panel-raised: #18243a;
   --panel-border: #52617a;
@@ -12,6 +20,8 @@
   --soul: #ff647c;
   --focus: #ffdc78;
   --app-navigation-height: 66px;
+  --grid-near-offset: 0px;
+  --grid-far-offset: 0px;
 }
 
 * {
@@ -20,22 +30,41 @@
 
 html {
   min-height: 100%;
-  background: var(--night);
+  background: #000000;
 }
 
 body {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
-  background-color: var(--night);
-  background-image:
-    radial-gradient(ellipse at 50% -18%, #223351 0, transparent 54%),
-    linear-gradient(#ffffff05 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff05 1px, transparent 1px);
-  background-size: auto, 24px 24px, 24px 24px;
-  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Courier New", monospace;
+  background: transparent;
+  font-family: "DTM Mono", monospace;
   font-size: 17px;
   line-height: 1.55;
+}
+
+body * {
+  font-family: "DTM Mono", monospace !important;
+}
+
+.scroll-grid-background {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#420042 1px, transparent 1px),
+    linear-gradient(90deg, #420042 1px, transparent 1px),
+    linear-gradient(#210021 1px, transparent 1px),
+    linear-gradient(90deg, #210021 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 48px 48px, 48px 48px;
+  background-position:
+    var(--grid-near-offset) var(--grid-near-offset),
+    var(--grid-near-offset) var(--grid-near-offset),
+    var(--grid-far-offset) var(--grid-far-offset),
+    var(--grid-far-offset) var(--grid-far-offset);
 }
 
 h1,
@@ -45,7 +74,7 @@ h4,
 h5,
 h6 {
   color: var(--ink);
-  font-family: "Courier New", ui-monospace, monospace;
+  font-family: "DTM Mono", monospace;
   font-weight: 800;
   letter-spacing: 0.045em;
   line-height: 1.2;
@@ -94,7 +123,7 @@ select {
   background: #263650 !important;
   box-shadow: 3px 3px 0 #050810;
   color: var(--ink) !important;
-  font-family: "Courier New", ui-monospace, monospace;
+  font-family: "DTM Mono", monospace;
   font-size: 0.9rem !important;
   font-weight: 800;
   letter-spacing: 0.035em;
@@ -146,7 +175,7 @@ select {
   border-radius: 3px !important;
   background: #0b1220 !important;
   color: var(--ink) !important;
-  font-family: "Courier New", ui-monospace, monospace;
+  font-family: "DTM Mono", monospace;
   font-size: 1rem;
 }
 
@@ -164,7 +193,7 @@ select {
 
 .deltarune-badge {
   border-radius: 2px;
-  font-family: "Courier New", ui-monospace, monospace;
+  font-family: "DTM Mono", monospace;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.035em;
@@ -197,8 +226,23 @@ select {
 
 .soul-heart {
   display: inline-block;
-  color: var(--soul);
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  background: url("/images/individuality.png") center / contain no-repeat;
+  font-size: 1.25em;
+  image-rendering: pixelated;
   animation: heartbeat 1.8s ease-in-out infinite;
+}
+
+.soul-trait-icon {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  flex: 0 0 auto;
+  object-fit: contain;
+  image-rendering: pixelated;
+  vertical-align: -0.25em;
 }
 
 .retro-glow {

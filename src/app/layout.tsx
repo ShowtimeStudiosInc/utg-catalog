@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppNavigation } from "@/components/app-navigation";
+import { ScrollGridBackground } from "@/components/scroll-grid-background";
 
 export const metadata: Metadata = {
   title: "Cataloger | RP Archive",
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ScrollGridBackground />
         <Providers>
           <a className="skip-to-content" href="#main-content">
             Skip to content
