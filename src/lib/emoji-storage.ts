@@ -23,11 +23,13 @@ const fileNamePattern =
 
 function readWebpDimensions(bytes: Buffer): { width: number; height: number } | null {
   if (bytes.length < 25 || bytes.toString("ascii", 0, 4) !== "RIFF" ||
-      bytes.toString("ascii", 8, 12) !== "WEBP") {
+      bytes.toString("ascii", 8, 12) !== "WEBP" ||
+      bytes.readUInt32LE(4) + 8 > bytes.length) {
     return null;
   }
 
   const chunkType = bytes.toString("ascii", 12, 16);
+  if (bytes.readUInt32LE(16) + 20 > bytes.length) return null;
   if (chunkType === "VP8X" && bytes.length >= 30) {
     return {
       width: 1 + bytes.readUIntLE(24, 3),
@@ -59,7 +61,13 @@ function readWebpDimensions(bytes: Buffer): { width: number; height: number } | 
 }
 
 function readJpegDimensions(bytes: Buffer): { width: number; height: number } | null {
-  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return null;
+  if (
+    bytes.length < 4 ||
+    bytes[0] !== 0xff ||
+    bytes[1] !== 0xd8 ||
+    bytes[bytes.length - 2] !== 0xff ||
+    bytes[bytes.length - 1] !== 0xd9
+  ) return null;
   const startOfFrame = new Set([
     0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf,
   ]);
@@ -94,7 +102,9 @@ export function inspectEmojiImage(bytes: Buffer): EmojiImage | null {
 
   if (
     bytes.length >= 24 &&
-    bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
+    bytes.toString("ascii", 12, 16) === "IHDR" &&
+    bytes.includes(Buffer.from([73, 69, 78, 68, 174, 66, 96, 130]))
   ) {
     image = {
       extension: "png",
@@ -104,7 +114,8 @@ export function inspectEmojiImage(bytes: Buffer): EmojiImage | null {
     };
   } else if (
     bytes.length >= 10 &&
-    ["GIF87a", "GIF89a"].includes(bytes.toString("ascii", 0, 6))
+    ["GIF87a", "GIF89a"].includes(bytes.toString("ascii", 0, 6)) &&
+    bytes[bytes.length - 1] === 0x3b
   ) {
     image = {
       extension: "gif",

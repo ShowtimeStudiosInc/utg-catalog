@@ -33,6 +33,7 @@ not use a static export. On first launch, Prisma applies packaged migrations
 and stores the SQLite database in Electron's per-user `userData` directory.
 The desktop server listens only on a dynamically assigned loopback port.
 Custom tag emojis accept PNG, GIF, WebP, and JPEG images up to 1 MB and
-256 × 256 pixels. They are assigned from the tag editor's emoji library; an
-image cannot be deleted while a tag uses it. The browser commands continue to
-use the `DATABASE_URL` configured for that environment.
+256 × 256 pixels, with a library limit of 250 images. They are assigned from
+the tag editor's emoji library; an image cannot be deleted while a tag uses it.
+The browser commands continue to use the `DATABASE_URL` configured for that
+environment.

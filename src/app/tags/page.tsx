@@ -24,7 +24,7 @@ type Tag = {
 };
 
 type TagInput = Pick<Tag, "name" | "color"> & {
-  category?: string;
+  category: string | null;
   emojiFilename: string | null;
 };
 
@@ -67,7 +67,7 @@ export default function TagsPage() {
     mutationFn: () => saveTag({
       name: name.trim(),
       color,
-      category: category.trim() || undefined,
+      category: category.trim() || null,
       emojiFilename,
     }, editingTag?.id),
     onSuccess: async () => {

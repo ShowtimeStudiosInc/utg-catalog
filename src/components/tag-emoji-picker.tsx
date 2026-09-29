@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type Emoji = {
   fileName: string;
@@ -20,71 +22,65 @@ async function responseError(response: Response) {
   return result?.error || "The emoji library request failed.";
 }
 
+async function fetchEmojis(): Promise<Emoji[]> {
+  const response = await fetch("/api/emojis");
+  if (!response.ok) throw new Error(await responseError(response));
+  return response.json();
+}
+
 export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
-  const [emojis, setEmojis] = useState<Emoji[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState("");
+  const queryClient = useQueryClient();
+  const [localError, setLocalError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
+  const { data: emojis = [], isLoading, error: queryError } = useQuery({
+    queryKey: ["custom-emojis"],
+    queryFn: fetchEmojis,
+  });
 
-  const loadEmojis = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/emojis");
-      if (!response.ok) throw new Error(await responseError(response));
-      setEmojis(await response.json());
-      setError("");
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to load the emoji library.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadEmojis();
-  }, [loadEmojis]);
-
-  async function uploadEmoji(file?: File) {
-    if (!file) return;
-    setError("");
-    if (file.size > 1024 * 1024) {
-      setError("Emoji images must be 1 MB or smaller.");
-      return;
-    }
-    if (!["image/png", "image/gif", "image/webp", "image/jpeg"].includes(file.type)) {
-      setError("Choose a PNG, GIF, WebP, or JPEG image.");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.set("file", file);
       const response = await fetch("/api/emojis", { method: "POST", body: formData });
       if (!response.ok) throw new Error(await responseError(response));
-      const emoji: Emoji = await response.json();
-      await loadEmojis();
+      return response.json() as Promise<Emoji>;
+    },
+    onSuccess: async (emoji) => {
       onChange(emoji.fileName);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to upload this emoji.");
-    } finally {
-      setIsUploading(false);
+      await queryClient.invalidateQueries({ queryKey: ["custom-emojis"] });
+    },
+    onSettled: () => {
       if (fileInput.current) fileInput.current.value = "";
-    }
-  }
+    },
+  });
 
-  async function deleteEmoji(fileName: string) {
-    setError("");
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (fileName: string) => {
       const response = await fetch(`/api/emojis/${encodeURIComponent(fileName)}`, { method: "DELETE" });
       if (!response.ok) throw new Error(await responseError(response));
+      return fileName;
+    },
+    onSuccess: async (fileName) => {
       if (value === fileName) onChange(null);
-      await loadEmojis();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to delete this emoji.");
+      await queryClient.invalidateQueries({ queryKey: ["custom-emojis"] });
+    },
+  });
+
+  function uploadEmoji(file?: File) {
+    if (!file) return;
+    setLocalError("");
+    if (file.size > 1024 * 1024) {
+      setLocalError("Emoji images must be 1 MB or smaller.");
+      return;
     }
+    if (!["image/png", "image/gif", "image/webp", "image/jpeg"].includes(file.type)) {
+      setLocalError("Choose a PNG, GIF, WebP, or JPEG image.");
+      return;
+    }
+    uploadMutation.mutate(file);
   }
+
+  const error = localError || queryError?.message || uploadMutation.error?.message || deleteMutation.error?.message;
 
   return (
     <section aria-label="Custom tag emoji" className="space-y-3">
@@ -95,14 +91,14 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label className="deltarune-button inline-flex cursor-pointer items-center px-3 py-2">
-            {isUploading ? "UPLOADING..." : "UPLOAD IMAGE"}
+            {uploadMutation.isPending ? "UPLOADING..." : "UPLOAD IMAGE"}
             <input
               ref={fileInput}
               className="sr-only"
               type="file"
               accept="image/png,image/gif,image/webp,image/jpeg"
               aria-label="Upload a custom emoji image"
-              disabled={isUploading}
+              disabled={uploadMutation.isPending}
               onChange={(event) => void uploadEmoji(event.target.files?.[0])}
             />
           </label>
@@ -130,7 +126,13 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
                 aria-label={`Assign emoji ${emoji.fileName}`}
                 onClick={() => onChange(value === emoji.fileName ? null : emoji.fileName)}
               >
-                <img src={`/api/emojis/${encodeURIComponent(emoji.fileName)}`} alt="" />
+                <Image
+                  src={`/api/emojis/${encodeURIComponent(emoji.fileName)}`}
+                  alt=""
+                  width={36}
+                  height={36}
+                  unoptimized
+                />
                 <span>{emoji.fileName.slice(0, 8)}</span>
               </button>
               <button
@@ -138,7 +140,7 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
                 type="button"
                 aria-label={`Delete emoji ${emoji.fileName}`}
                 title="Delete from library"
-                onClick={() => void deleteEmoji(emoji.fileName)}
+                onClick={() => deleteMutation.mutate(emoji.fileName)}
               >
                 ×
               </button>
