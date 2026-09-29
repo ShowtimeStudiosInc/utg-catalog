@@ -6,7 +6,9 @@ the desktop app. Its interface uses the bundled DTM Mono font, a black canvas,
 and two layered pixel grids that drift continuously in opposite diagonal
 directions without depending on scrolling. Grid animation respects reduced
 motion preferences. Controls use orange `#FF7F27` with yellow `#FFFF00`
-hover and keyboard-focus states. The supplied individuality icon is bundled
+hover and keyboard-focus states. The home menu uses compact destination
+buttons with replaceable local iconography; upcoming brand artwork and custom
+cell sprites are not included yet. The supplied individuality icon is bundled
 locally; no visual assets are fetched from third-party services.
 
 ## Browser app
@@ -32,9 +34,10 @@ with `npm run electron:build`, or use `npm run electron:build:win`,
 `npm run electron:build:mac`, or `npm run electron:build:linux` to target a
 specific platform.
 
-The installer is presented as UTG Catalog and includes the production Next.js server and API routes; it does
-not use a static export. On first launch, Prisma applies packaged migrations
-and stores the SQLite database in Electron's per-user `userData` directory.
+The installer is presented as UTG Catalog and includes the production Next.js
+server and API routes; it does not use a static export. On first launch, Prisma
+applies packaged migrations and stores the SQLite database in Electron's
+per-user `userData` directory.
 The desktop server listens only on a dynamically assigned loopback port.
 Custom tag emojis accept PNG, GIF, WebP, and JPEG images up to 1 MB and
 256 × 256 pixels, with a library limit of 250 images. Give each image a unique
