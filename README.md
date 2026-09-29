@@ -7,8 +7,18 @@ and two layered pixel grids that drift continuously in opposite diagonal
 directions without depending on scrolling. Grid animation respects reduced
 motion preferences. Controls use orange `#FF7F27` with yellow `#FFFF00`
 hover and keyboard-focus states. The home menu uses compact destination
-buttons with replaceable local iconography; upcoming brand artwork and custom
-cell sprites are not included yet. The supplied individuality icon is bundled locally; no visual assets are fetched from third-party services. The catalog also includes a bundled soul trait sprite set under `public/images/soul-traits/` for Individuality, Patience, Bravery, Integrity, Perseverance, Kindness, and Justice. These 90×90 PNGs preserve the original pixel art and are used in character selection, stats, list, detail, and graph views.
+buttons with replaceable local iconography. The supplied individuality and
+soul-trait artwork is bundled locally; no visual assets are fetched from
+third-party services. The soul-trait sprites for Individuality,
+Patience, Bravery, Integrity, Perseverance, Kindness, and Justice preserve the
+original pixel art and are used in character selection, stats, list, detail,
+and graph views.
+
+Content cards, dialogs, and page-state callouts use the supplied nine-piece
+pixel frame under `public/images/text-box/`. The reusable `.tile-panel` surface
+keeps each 59×56 corner at native size and repeats edge and fill sprites across
+larger panels; controls and other non-panel surfaces remain black with white
+outlines.
 
 ## Browser app
 

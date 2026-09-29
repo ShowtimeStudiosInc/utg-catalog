@@ -80,7 +80,7 @@ const CustomNode = ({ data }: NodeProps<FlowNode>) => {
   };
 
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-[#1a1a3a] border-2 border-[#4a4a8a] min-w-[120px]">
+    <div className="graph-node px-4 py-2 min-w-[120px]">
       <div className="font-bold text-white text-sm">{data.label}</div>
       <div className="flex gap-1 mt-1 flex-wrap">
         <Badge 
@@ -198,7 +198,7 @@ export default function GraphPage() {
   return (
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="h-screen flex flex-col">
-        <div className="bg-[#1a1a3a] border-b-2 border-[#4a4a8a] p-4">
+        <div className="graph-toolbar p-4">
           <div className="container mx-auto flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl text-white retro-glow">GRAPH VIEW</h1>
@@ -264,11 +264,11 @@ export default function GraphPage() {
             nodeTypes={nodeTypes}
             connectionMode={ConnectionMode.Loose}
             fitView
-            className="bg-[#0f0f1a]"
+            className="graph-canvas"
           >
-            <Controls className="!bg-[#1a1a3a] !border-[#4a4a8a] !text-white" />
+            <Controls className="graph-controls !text-white" />
             <MiniMap 
-              className="!bg-[#1a1a3a] !border-[#4a4a8a]" 
+              className="graph-minimap"
               nodeColor="#e94560"
               nodeStrokeWidth={2}
             />

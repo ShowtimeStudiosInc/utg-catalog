@@ -11,9 +11,9 @@
 :root {
   color-scheme: dark;
   --night: #000000;
-  --panel: #111a2b;
-  --panel-raised: #18243a;
-  --panel-border: #52617a;
+  --panel: #000000;
+  --panel-raised: #000000;
+  --panel-border: #ffffff;
   --ink: #f6f4ed;
   --muted: #b5bdcc;
   --accent: #ff7f27;
@@ -213,24 +213,26 @@ input[type="reset"]:disabled {
 }
 
 .deltarune-card {
-  border: 2px solid var(--panel-border) !important;
-  border-radius: 4px !important;
-  background: linear-gradient(145deg, #17243a 0%, #101827 100%) !important;
-  box-shadow: 4px 4px 0 #050810;
+  border: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  background-color: #000000 !important;
+  background-image: none !important;
+  box-shadow: none;
   color: var(--ink);
-  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .deltarune-card:hover {
-  border-color: var(--accent) !important;
-  box-shadow: 4px 4px 0 #050810, 0 0 0 1px #ff7f2730;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 1px #ffffff30;
 }
 
 .deltarune-input {
   min-height: 42px;
-  border: 2px solid #63728a !important;
-  border-radius: 3px !important;
-  background: #0b1220 !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  background-color: #000000 !important;
+  background-image: none !important;
   color: var(--ink) !important;
   font-family: "DTM Mono", monospace;
   font-size: 1rem;
@@ -261,14 +263,79 @@ input[type="reset"]:disabled {
   color: var(--ink);
 }
 
-[data-slot="dialog-popup"],
-[data-slot="select-popup"],
+[data-slot="dialog-content"],
+[data-slot="select-content"],
 [data-slot="popover-popup"] {
-  border: 2px solid var(--panel-border);
-  border-radius: 4px;
-  background: var(--panel) !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  background-color: #000000 !important;
+  background-image: none !important;
   color: var(--ink);
-  box-shadow: 5px 5px 0 #050810;
+  box-shadow: 4px 4px 0 #050810 !important;
+}
+
+.tile-panel,
+.page-state,
+.min-h-screen > .container > .text-center.text-2xl,
+.min-h-screen .text-center.py-12 {
+  min-width: 118px;
+  min-height: 112px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: #000000 !important;
+  background-image:
+    url("/images/text-box/top-left.png"),
+    url("/images/text-box/top-middle.png"),
+    url("/images/text-box/top-right.png"),
+    url("/images/text-box/center-left.png"),
+    url("/images/text-box/center-middle.png"),
+    url("/images/text-box/center-right.png"),
+    url("/images/text-box/bottom-left.png"),
+    url("/images/text-box/bottom-middle.png"),
+    url("/images/text-box/bottom-right.png") !important;
+  background-position:
+    left top,
+    left top,
+    right top,
+    left top,
+    left top,
+    right top,
+    left bottom,
+    left bottom,
+    right bottom;
+  background-size:
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px,
+    59px 56px;
+  background-repeat:
+    no-repeat,
+    repeat-x,
+    no-repeat,
+    repeat-y,
+    repeat,
+    repeat-y,
+    no-repeat,
+    repeat-x,
+    no-repeat;
+  box-shadow: 4px 4px 0 #050810 !important;
+}
+
+.tile-panel[data-slot="dialog-content"] {
+  padding-top: 3.5rem !important;
+  padding-bottom: 3.5rem !important;
+}
+
+[data-slot="dialog-footer"],
+[data-slot="card-footer"] {
+  border-color: #ffffff;
+  border-radius: 0;
+  background: #000000 !important;
 }
 
 [data-slot="dialog-backdrop"] {
@@ -436,8 +503,8 @@ input[type="reset"]:disabled {
   min-height: 66px;
   align-items: center;
   gap: 1rem;
-  border-bottom: 2px solid #52617a;
-  background: #0b1220;
+  border-bottom: 2px solid #ffffff;
+  background: #000000;
   padding: 0.65rem clamp(1rem, 4vw, 3rem);
   box-shadow: 0 4px 0 #050810;
 }
@@ -620,7 +687,7 @@ input[type="reset"]:disabled {
   padding: 0.65rem 0.85rem;
   transform: translateY(-160%);
   border: 2px solid var(--accent);
-  background: var(--panel);
+  background: #000000;
   color: var(--accent);
   font-weight: 800;
 }
@@ -667,9 +734,6 @@ input[type="reset"]:disabled {
 }
 
 .page-state {
-  border: 2px solid var(--panel-border);
-  background: #111a2b;
-  box-shadow: 4px 4px 0 #050810;
   color: var(--muted);
   margin: 1.5rem auto;
   max-width: 52rem;
@@ -694,10 +758,31 @@ input[type="reset"]:disabled {
 
 .min-h-screen > .container > .text-center.text-2xl,
 .min-h-screen .text-center.py-12 {
-  border: 2px solid var(--panel-border);
-  background: #111a2b;
-  box-shadow: 4px 4px 0 #050810;
   padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.graph-toolbar {
+  border-bottom: 2px solid #ffffff;
+  background: #000000;
+}
+
+.graph-node {
+  border: 2px solid #ffffff;
+  border-radius: 0;
+  background: #000000;
+  box-shadow: 3px 3px 0 #050810;
+}
+
+.graph-canvas {
+  background-color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.graph-controls,
+.graph-minimap {
+  border: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  background: #000000 !important;
 }
 
 .deltarune-badge {
@@ -715,13 +800,13 @@ input[type="reset"]:disabled {
 }
 
 ::-webkit-scrollbar-track {
-  border: 2px solid #3f4c62;
-  background: #0b1220;
+  border: 2px solid #ffffff;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 2px solid #0b1220;
-  background: #67758b;
+  border: 2px solid #000000;
+  background: #ffffff;
 }
 
 ::-webkit-scrollbar-thumb:hover {
