@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TagLabel } from "@/components/tag-label";
+import { SoulTraitIcon } from "@/components/soul-trait-icon";
 
 type GraphApiNode = {
   id: string;
@@ -90,7 +91,10 @@ const CustomNode = ({ data }: NodeProps<FlowNode>) => {
         </Badge>
         {data.data.soulTrait && (
           <Badge className="deltarune-badge text-white text-xs" style={{ backgroundColor: '#ff6b6b', borderColor: '#ff6b6b' }}>
-            {data.data.soulTrait}
+            <span className="inline-flex items-center gap-1.5">
+              <SoulTraitIcon trait={data.data.soulTrait} size={14} />
+              <span>{data.data.soulTrait}</span>
+            </span>
           </Badge>
         )}
         {data.data.itemType && (

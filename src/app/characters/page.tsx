@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { SoulTraitIcon } from "@/components/soul-trait-icon";
 
 async function fetchCharacters() {
   const response = await fetch('/api/characters');
@@ -83,7 +84,10 @@ export default function CharactersPage() {
                           borderColor: soulTraitColors[character.soulTrait] || '#4a4a8a'
                         }}
                       >
-                        {character.soulTrait}
+                        <span className="inline-flex items-center gap-2">
+                          <SoulTraitIcon trait={character.soulTrait} size={16} />
+                          <span>{character.soulTrait}</span>
+                        </span>
                       </Badge>
                     )}
                     {character.alignment && (

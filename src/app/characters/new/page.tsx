@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SoulTraitIcon } from "@/components/soul-trait-icon";
 
 export default function NewCharacterPage() {
   const router = useRouter();
@@ -228,16 +228,22 @@ export default function NewCharacterPage() {
                         <SelectValue placeholder="Select soul trait" />
                       </SelectTrigger>
                       <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectItem value="Individuality" className="text-white hover:bg-[#2a2a5a]">
-                          <Image src="/images/individuality.png" alt="" width={18} height={18} className="soul-trait-icon" />
-                          Individuality
-                        </SelectItem>
-                        <SelectItem value="Patience" className="text-white hover:bg-[#2a2a5a]">💙 Patience</SelectItem>
-                        <SelectItem value="Bravery" className="text-white hover:bg-[#2a2a5a]">💛 Bravery</SelectItem>
-                        <SelectItem value="Integrity" className="text-white hover:bg-[#2a2a5a]">💚 Integrity</SelectItem>
-                        <SelectItem value="Perseverance" className="text-white hover:bg-[#2a2a5a]">💜 Perseverance</SelectItem>
-                        <SelectItem value="Kindness" className="text-white hover:bg-[#2a2a5a]">💕 Kindness</SelectItem>
-                        <SelectItem value="Justice" className="text-white hover:bg-[#2a2a5a]">💛 Justice</SelectItem>
+                        {[
+                          "Individuality",
+                          "Patience",
+                          "Bravery",
+                          "Integrity",
+                          "Perseverance",
+                          "Kindness",
+                          "Justice",
+                        ].map((trait) => (
+                          <SelectItem key={trait} value={trait} className="text-white hover:bg-[#2a2a5a]">
+                            <span className="inline-flex items-center gap-2">
+                              <SoulTraitIcon trait={trait} size={18} />
+                              <span>{trait}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

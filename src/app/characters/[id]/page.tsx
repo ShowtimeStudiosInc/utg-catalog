@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagLabel } from "@/components/tag-label";
+import { SoulTraitIcon } from "@/components/soul-trait-icon";
 
 async function fetchCharacter(id: string) {
   const response = await fetch(`/api/characters/${id}`);
@@ -119,7 +120,10 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                   borderColor: soulTraitColors[character.soulTrait] || '#4a4a8a'
                 }}
               >
-                {character.soulTrait}
+                <span className="inline-flex items-center gap-2">
+                  <SoulTraitIcon trait={character.soulTrait} size={16} />
+                  <span>{character.soulTrait}</span>
+                </span>
               </Badge>
             )}
             {character.alignment && (
