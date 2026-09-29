@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Main entity models
+model Character {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Submitter info
+  submitter         String?
+  submitterRole     String?
+  
+  // Main Information
+  name              String
+  aliases           String?   // JSON array of strings
+  gender            String?
+  age               Int?
+  species           String?   // Custom field
+  groupOrganization String?
+  role              String?
+  
+  // Behavior
+  personality       String?   // Rich text/markdown
+  likes             String?   // JSON array
+  dislikes          String?   // JSON array
+  fears             String?   // JSON array
+  traumas           String?   // JSON array
+  psychologicalOddities String? // JSON array
+  sexuality         String?
+  alignment         String?   // Lawful/Neutral/Chaotic + Good/Neutral/Evil
+  
+  // Capabilities
+  soulTrait         String?   // Individuality, Patience, Bravery, Integrity, Perseverance, Kindness, Justice
+  mainAbility       String?   // Ability name reference
+  mainAbilityType   String?   // Physical, etc.
+  mainAbilityDesc   String?   // Rich text
+  subAbilities      String?   // JSON array of ability names
+  subAbilityDescs   String?   // JSON array of descriptions
+  weaknesses        String?   // JSON array
+  
+  // Stats - The Whole
+  hp                Int?
+  wpr               Int?
+  
+  // Stats - The Vessel
+  atk               Int?
+  weapon            String?   // Item reference
+  weapon2           String?   // Item reference
+  def               Int?
+  armor             String?   // Item reference
+  accessory1        String?   // Item reference
+  accessory2        String?   // Item reference
+  edr               Int?
+  spd               Int?
+  
+  // Stats - The Soul
+  love              Int?
+  exp               Int?
+  
+  // Appearance
+  height            String?
+  weight            String?
+  physicalOddities  String?   // JSON array
+  appearanceImage   String?   // URL
+  
+  // Custom sections
+  trivia            String?   // Rich text
+  ost               String?   // JSON array of {name, url}
+  extras            String?   // Rich text
+  
+  // Relationships
+  tags              CharacterTag[]
+  
+  // String references to avoid circular dependencies
+  // equipment and ownership are handled via string fields
+  
+  @@index([name])
+  @@index([soulTrait])
+  @@index([alignment])
+}
+
+model Item {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Main Information
+  name              String
+  description       String?   // Rich text
+  type              String    // Weapon, Shield, Armor, Accessory, Consumable, Miscellaneous
+  value             Float?    // In Aurum
+  originalOwner     String?   // Character ID reference
+  currentOwner      String?   // Character ID reference
+  
+  // Stats
+  atk               String?   // Can be number or multiplier like "Multiplies by 2"
+  hitCount          Int?
+  def               String?   // Can be number or multiplier
+  defendEfficiency  Float?    // Max 4x
+  spd               Int?
+  
+  // Physical Properties
+  range             String?   // Descriptive text
+  weight            String?   // Descriptive with units
+  physicalDamages   String?   // JSON array
+  appearanceImage   String?   // URL
+  
+  // Relationships
+  tags              ItemTag[]
+  
+  @@index([name])
+  @@index([type])
+  @@index([originalOwner])
+  @@index([currentOwner])
+}
+
+model Ability {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Information
+  name              String
+  parentAbility      String?   // Can reference multiple parents - JSON array
+  description       String?   // Rich text
+  complexity        String?   // Basic, Intermediate, Advanced, Complex
+  
+  // Components
+  passives          String?   // JSON array of {name, description}
+  skills            String?   // JSON array of {name, expertiseLevel, tpCost, description, mechanics}
+  statChanges       String?   // JSON array of {stat, modifier, condition}
+  weaknesses        String?   // JSON array
+  
+  // Optional user-specific classification system
+  rating            String?   // Limited, Minor, Base, Enhanced, Advanced, Perfect
+  abilityType       String?   // Offensive, Defensive, Buffing, Debuffing, Mobility, Utility
+  abilityClass      String?   // Physical, Summoning, Visions, Shapeshifting, Enchantments, Alteration, Entropy, Elements
+  
+  // Relationships
+  tags              AbilityTag[]
+  
+  @@index([name])
+  @@index([complexity])
+  @@index([rating])
+  @@index([abilityType])
+}
+
+// Tag system
+model Tag {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  color       String    @default("#3b82f6") // Hex color
+  category    String?   // Character, Item, Ability, or custom
+  createdAt   DateTime  @default(now())
+  
+  characterTags CharacterTag[]
+  itemTags     ItemTag[]
+  abilityTags  AbilityTag[]
+  
+  @@index([category])
+}
+
+model CharacterTag {
+  id          String    @id @default(cuid())
+  characterId String
+  tagId       String
+  character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  tag         Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([characterId, tagId])
+  @@index([characterId])
+  @@index([tagId])
+}
+
+model ItemTag {
+  id      String    @id @default(cuid())
+  itemId  String
+  tagId   String
+  item    Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag     Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([itemId, tagId])
+  @@index([itemId])
+  @@index([tagId])
+}
+
+model AbilityTag {
+  id        String    @id @default(cuid())
+  abilityId String
+  tagId     String
+  ability   Ability   @relation(fields: [abilityId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([abilityId, tagId])
+  @@index([abilityId])
+  @@index([tagId])
+}

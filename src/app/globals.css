@@ -1,26 +1,142 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --deltarune-dark: #1a1a2e;
+  --deltarune-blue: #16213e;
+  --deltarune-purple: #0f3460;
+  --deltarune-red: #e94560;
+  --deltarune-yellow: #f9d71c;
+  --deltarune-white: #ffffff;
+  --deltarune-gray: #a0a0a0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'VT323', monospace;
+  background-color: var(--deltarune-dark);
+  color: var(--deltarune-white);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Press Start 2P', cursive;
+}
+
+/* Deltarune-style buttons */
+.deltarune-button {
+  font-family: 'Press Start 2P', cursive;
+  background: linear-gradient(180deg, #4a4a8a 0%, #2a2a5a 100%);
+  border: 4px solid #1a1a3a;
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.2),
+    inset -2px -2px 0 rgba(0,0,0,0.3),
+    4px 4px 0 rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  transition: all 0.1s;
+}
+
+.deltarune-button:hover {
+  background: linear-gradient(180deg, #5a5a9a 0%, #3a3a6a 100%);
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.2),
+    inset -2px -2px 0 rgba(0,0,0,0.3),
+    6px 6px 0 rgba(0,0,0,0.5);
+}
+
+.deltarune-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    inset 2px 2px 0 rgba(0,0,0,0.3),
+    inset -2px -2px 0 rgba(255,255,255,0.1),
+    2px 2px 0 rgba(0,0,0,0.5);
+}
+
+/* Deltarune-style cards */
+.deltarune-card {
+  background: linear-gradient(180deg, #2a2a5a 0%, #1a1a3a 100%);
+  border: 4px solid #4a4a8a;
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.1),
+    inset -2px -2px 0 rgba(0,0,0,0.3),
+    4px 4px 0 rgba(0,0,0,0.5);
+}
+
+.deltarune-card:hover {
+  border-color: var(--deltarune-yellow);
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.1),
+    inset -2px -2px 0 rgba(0,0,0,0.3),
+    4px 4px 0 rgba(249, 215, 28, 0.5);
+}
+
+/* Deltarune-style inputs */
+.deltarune-input {
+  font-family: 'VT323', monospace;
+  background: #1a1a3a;
+  border: 3px solid #4a4a8a;
+  color: var(--deltarune-white);
+  font-size: 1.25rem;
+}
+
+.deltarune-input:focus {
+  border-color: var(--deltarune-yellow);
+  outline: none;
+  box-shadow: 0 0 10px rgba(249, 215, 28, 0.3);
+}
+
+/* Pixel-style scrolling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a3a;
+  border: 2px solid #4a4a8a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a4a8a;
+  border: 2px solid #2a2a5a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--deltarune-yellow);
+}
+
+/* Deltarune-style badges */
+.deltarune-badge {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid;
+  text-transform: uppercase;
+}
+
+/* Pixel art effect */
+.pixel-border {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Heart animations for soul traits */
+.soul-heart {
+  display: inline-block;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Retro text glow */
+.retro-glow {
+  text-shadow: 
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 20px currentColor;
 }

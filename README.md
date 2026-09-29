@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RP Cataloger
 
-## Getting Started
+RP Cataloger is a Next.js application with an Electron desktop wrapper. The
+browser-based development and production commands remain available alongside
+the desktop app.
 
-First, run the development server:
+## Browser app
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>. For a production browser server, run
+`npm run build` followed by `npm run start`. Set `DATABASE_URL` in `.env` to a
+writable SQLite database before using the API.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Electron desktop app
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run `npm run electron:dev` to open the desktop wrapper against the Next.js
+development server. Create a production installer for the current platform
+with `npm run electron:build`, or use `npm run electron:build:win`,
+`npm run electron:build:mac`, or `npm run electron:build:linux` to target a
+specific platform.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The installer includes the production Next.js server and API routes; it does
+not use a static export. On first launch, Prisma applies packaged migrations
+and stores the SQLite database in Electron's per-user `userData` directory.
+The desktop server listens only on a dynamically assigned loopback port. The
+browser commands continue to use the `DATABASE_URL` configured for that
+environment.
