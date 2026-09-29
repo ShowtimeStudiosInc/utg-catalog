@@ -51,7 +51,7 @@
   },
   "build": {
     "appId": "com.cataloger.rpmanager",
-    "productName": "RP Cataloger",
+    "productName": "UTG Catalog",
     "directories": {
       "output": "dist"
     },

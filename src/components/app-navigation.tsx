@@ -47,8 +47,8 @@ export function AppNavigation() {
           ← Back
         </button>
       )}
-      <Link className="app-navigation__brand" href="/" aria-label="Cataloger home">
-        CATALOGER
+      <Link className="app-navigation__brand" href="/" aria-label="UTG Catalog home">
+        UTG CATALOG
       </Link>
       <nav className="app-navigation__links" aria-label="Main navigation">
         {sections.map(([label, href]) => (

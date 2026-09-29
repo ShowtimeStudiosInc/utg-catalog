@@ -200,7 +200,7 @@ function waitForServer(child) {
         if (match) {
           finish(null, `http://127.0.0.1:${match[1]}`);
         } else if (line) {
-          console.log(`[Cataloger server] ${line}`);
+          console.log(`[UTG Catalog server] ${line}`);
         }
       }
     }
@@ -221,7 +221,7 @@ function waitForServer(child) {
     child.once('error', onError);
     child.once('exit', onExit);
     child.stderr.on('data', (chunk) => {
-      console.error(`[Cataloger server] ${chunk.toString().trimEnd()}`);
+      console.error(`[UTG Catalog server] ${chunk.toString().trimEnd()}`);
     });
   });
 }
@@ -230,10 +230,10 @@ async function waitForDevelopmentServer(child, port) {
   const url = `http://127.0.0.1:${port}`;
   const timeoutAt = Date.now() + startupTimeoutMs;
   child.stdout.on('data', (chunk) => {
-    console.log(`[Cataloger dev server] ${chunk.toString().trimEnd()}`);
+    console.log(`[UTG Catalog dev server] ${chunk.toString().trimEnd()}`);
   });
   child.stderr.on('data', (chunk) => {
-    console.error(`[Cataloger dev server] ${chunk.toString().trimEnd()}`);
+    console.error(`[UTG Catalog dev server] ${chunk.toString().trimEnd()}`);
   });
 
   while (Date.now() < timeoutAt) {
@@ -325,7 +325,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(appUrl).catch((error) => {
-    console.error('Failed to load Cataloger:', error);
+    console.error('Failed to load UTG Catalog:', error);
   });
 
   if (isDev) mainWindow.webContents.openDevTools();
@@ -335,7 +335,7 @@ function createTray() {
   if (process.platform !== 'win32' || !fs.existsSync(iconPath)) return;
 
   tray = new Tray(iconPath);
-  tray.setToolTip('RP Cataloger');
+  tray.setToolTip('UTG Catalog');
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: 'Open App', click: () => mainWindow?.show() },
@@ -356,9 +356,9 @@ app.whenReady()
     createTray();
   })
   .catch((error) => {
-    console.error('Failed to start Cataloger:', error);
+    console.error('Failed to start UTG Catalog:', error);
     dialog.showErrorBox(
-      'Cataloger could not start',
+      'UTG Catalog could not start',
       `The application failed to initialize.\n\n${error.message}`,
     );
     app.quit();

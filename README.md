@@ -1,11 +1,13 @@
-# RP Cataloger
+# UTG Catalog
 
-RP Cataloger is a Next.js application with an Electron desktop wrapper. The
+UTG Catalog is a Next.js application with an Electron desktop wrapper. The
 browser-based development and production commands remain available alongside
-the desktop app. Its high-contrast interface uses the bundled DTM Mono font,
-black canvas, and two layered pixel grids that move diagonally in opposite
-directions as you scroll. The supplied individuality icon is bundled locally;
-no visual assets are fetched from third-party services.
+the desktop app. Its interface uses the bundled DTM Mono font, a black canvas,
+and two layered pixel grids that drift continuously in opposite diagonal
+directions without depending on scrolling. Grid animation respects reduced
+motion preferences. Controls use orange `#FF7F27` with yellow `#FFFF00`
+hover and keyboard-focus states. The supplied individuality icon is bundled
+locally; no visual assets are fetched from third-party services.
 
 ## Browser app
 
@@ -30,7 +32,7 @@ with `npm run electron:build`, or use `npm run electron:build:win`,
 `npm run electron:build:mac`, or `npm run electron:build:linux` to target a
 specific platform.
 
-The installer includes the production Next.js server and API routes; it does
+The installer is presented as UTG Catalog and includes the production Next.js server and API routes; it does
 not use a static export. On first launch, Prisma applies packaged migrations
 and stores the SQLite database in Electron's per-user `userData` directory.
 The desktop server listens only on a dynamically assigned loopback port.

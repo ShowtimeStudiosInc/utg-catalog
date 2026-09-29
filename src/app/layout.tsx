@@ -5,7 +5,7 @@ import { AppNavigation } from "@/components/app-navigation";
 import { ScrollGridBackground } from "@/components/scroll-grid-background";
 
 export const metadata: Metadata = {
-  title: "Cataloger | RP Archive",
+  title: "UTG Catalog",
   description: "Visual note-taking application for roleplay server management",
 };
 
