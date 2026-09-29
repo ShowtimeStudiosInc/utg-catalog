@@ -92,10 +92,12 @@ export default function TagsPage() {
 
   function openCreate() {
     resetForm();
+    saveMutation.reset();
     setDialogOpen(true);
   }
 
   function openEdit(tag: Tag) {
+    saveMutation.reset();
     setEditingTag(tag);
     setName(tag.name);
     setColor(tag.color);
@@ -124,13 +126,13 @@ export default function TagsPage() {
   }
 
   return (
-    <div className="min-h-screen pixel-border">
+    <div className="min-h-screen pixel-border tags-page">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="mb-2 text-sm font-bold tracking-[0.18em] text-[#f5cf69]">LIBRARY / LABELS</p>
-            <h1 className="retro-glow mb-2 text-4xl text-white">TAGS</h1>
-            <p className="text-xl text-[#b5bdcc]">Sort your world and give its labels a visual signature.</p>
+        <div className="tags-page__heading mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="tags-page__intro">
+            <p className="tags-page__eyebrow mb-2 text-sm font-bold tracking-[0.18em] text-[#f5cf69]">LIBRARY / LABELS</p>
+            <h1 className="tags-page__title retro-glow mb-2 text-4xl text-white">TAGS</h1>
+            <p className="tags-page__description text-xl text-[#b5bdcc]">Sort your world and give its labels a visual signature.</p>
           </div>
           <Button onClick={openCreate} className="deltarune-button text-white">+ CREATE TAG</Button>
         </div>
@@ -139,7 +141,7 @@ export default function TagsPage() {
           setDialogOpen(open);
           if (!open) resetForm();
         }}>
-          <DialogContent className="deltarune-card max-h-[90vh] overflow-y-auto bg-[#111a2b]">
+          <DialogContent className="deltarune-card tag-dialog max-h-[90vh] overflow-y-auto bg-[#111a2b]">
             <DialogHeader>
               <DialogTitle className="text-white">{editingTag ? "Edit tag" : "Create a tag"}</DialogTitle>
               <DialogDescription className="text-[#b5bdcc]">
@@ -195,7 +197,7 @@ export default function TagsPage() {
                 <p className="text-sm text-[#ff9aa4]" role="alert">{saveMutation.error.message}</p>
               )}
               <div className="flex justify-end gap-2">
-                <Button type="button" onClick={() => setDialogOpen(false)} className="deltarune-button">
+                <Button type="button" onClick={() => setDialogOpen(false)} disabled={saveMutation.isPending} className="deltarune-button">
                   CANCEL
                 </Button>
                 <Button type="submit" disabled={saveMutation.isPending} className="deltarune-button">

@@ -80,7 +80,7 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
     uploadMutation.mutate(file);
   }
 
-  const error = localError || queryError?.message || uploadMutation.error?.message || deleteMutation.error?.message;
+  const error = localError || uploadMutation.error?.message || deleteMutation.error?.message;
 
   return (
     <section aria-label="Custom tag emoji" className="space-y-3">
@@ -110,6 +110,14 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
         </div>
       </div>
 
+      {queryError && (
+        <div className="emoji-picker-error" role="alert">
+          <p>{queryError.message}</p>
+          <button type="button" onClick={() => void queryClient.invalidateQueries({ queryKey: ["custom-emojis"] })}>
+            TRY AGAIN
+          </button>
+        </div>
+      )}
       {error && <p className="text-sm text-[#ff9aa4]" role="alert">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-[#b5bdcc]" role="status">Loading emoji library…</p>
@@ -136,10 +144,11 @@ export function TagEmojiPicker({ value, onChange }: TagEmojiPickerProps) {
                 <span>{emoji.fileName.slice(0, 8)}</span>
               </button>
               <button
-                className="absolute right-1 top-1 rounded border border-[#63728a] bg-[#0b1220] px-1 text-xs text-white hover:border-[#ff8792] hover:text-[#ff9aa4]"
+                className="emoji-picker-delete absolute right-1 top-1 rounded border border-[#63728a] bg-[#0b1220] px-1 text-xs text-white hover:border-[#ff8792] hover:text-[#ff9aa4]"
                 type="button"
                 aria-label={`Delete emoji ${emoji.fileName}`}
                 title="Delete from library"
+                disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(emoji.fileName)}
               >
                 ×

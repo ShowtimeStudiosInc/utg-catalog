@@ -17,8 +17,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
+          <a className="skip-to-content" href="#main-content">
+            Skip to content
+          </a>
           <AppNavigation />
-          <main>{children}</main>
+          <main id="main-content" tabIndex={-1}>{children}</main>
         </Providers>
       </body>
     </html>

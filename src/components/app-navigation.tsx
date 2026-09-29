@@ -38,7 +38,12 @@ export function AppNavigation() {
   return (
     <header className="app-navigation">
       {!isHome && (
-        <button className="app-navigation__back" onClick={goBack} type="button">
+        <button
+          className="app-navigation__back"
+          onClick={goBack}
+          type="button"
+          aria-label="Go back to the previous page"
+        >
           ← Back
         </button>
       )}
