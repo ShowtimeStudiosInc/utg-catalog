@@ -46,8 +46,8 @@ export async function PUT(
       where: { id },
       data: {
         ...validatedData,
-        abilityType: serializeAbilityClassification(validatedData.abilityType),
-        abilityClass: serializeAbilityClassification(validatedData.abilityClass),
+        abilityType: serializeAbilityClassification(validatedData.abilityType) ?? (Array.isArray(validatedData.abilityType) ? '[]' : undefined),
+        abilityClass: serializeAbilityClassification(validatedData.abilityClass) ?? (Array.isArray(validatedData.abilityClass) ? '[]' : undefined),
       },
     });
 

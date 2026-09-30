@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +10,7 @@ import { CustomEmojiText } from "@/components/custom-emoji-text";
 import { AbilityClassificationImage, AbilityClassificationOption } from "@/components/ability-classification";
 import { parseAbilityClassification } from "@/lib/ability-classification";
 import { AddTagsDialog } from "@/components/add-tags-dialog";
+import { RecordActions } from "@/components/record-editor";
 
 async function fetchAbility(id: string) {
   const response = await fetch(`/api/abilities/${id}`);
@@ -145,7 +145,7 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {abilityTags?.map((tag: any) => (
+            {abilityTags?.map((tag: { id: string; color: string; name: string; emojiFilename?: string | null }) => (
               <Badge 
                 key={tag.id}
                 className="deltarune-badge text-white"
@@ -238,17 +238,7 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
           </TabsContent>
         </Tabs>
 
-        <div className="flex gap-4 mt-8">
-          <Button className="deltarune-button text-white">
-            EDIT ABILITY
-          </Button>
-          <Button 
-            className="deltarune-button text-white"
-            style={{ backgroundColor: '#e94560' }}
-          >
-            DELETE
-          </Button>
-        </div>
+        {abilityId && <RecordActions entity="abilities" id={abilityId} />}
       </div>
     </div>
   );

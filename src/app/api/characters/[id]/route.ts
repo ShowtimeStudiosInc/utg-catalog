@@ -44,7 +44,10 @@ export async function PUT(
 
     const character = await prisma.character.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        youtubeLinks: validatedData.youtubeLinks ?? (body.youtubeLinks === null || (Array.isArray(body.youtubeLinks) && body.youtubeLinks.length === 0) ? null : undefined),
+      },
     });
 
     return NextResponse.json(character);

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TagLabel } from "@/components/tag-label";
@@ -11,6 +10,7 @@ import { SoulTraitIcon } from "@/components/soul-trait-icon";
 import { CustomEmojiText } from "@/components/custom-emoji-text";
 import { AddTagsDialog } from "@/components/add-tags-dialog";
 import { CharacterYoutubePlayer } from "@/components/character-youtube-player";
+import { RecordActions } from "@/components/record-editor";
 
 async function fetchCharacter(id: string) {
   const response = await fetch(`/api/characters/${id}`);
@@ -141,7 +141,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {characterTags?.map((tag: any) => (
+            {characterTags?.map((tag: { id: string; color: string; name: string; emojiFilename?: string | null }) => (
               <Badge 
                 key={tag.id}
                 className="deltarune-badge text-white"
@@ -409,17 +409,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </TabsContent>
         </Tabs>
 
-        <div className="flex gap-4 mt-8">
-          <Button className="deltarune-button text-white">
-            EDIT CHARACTER
-          </Button>
-          <Button 
-            className="deltarune-button text-white"
-            style={{ backgroundColor: '#e94560' }}
-          >
-            DELETE
-          </Button>
-        </div>
+        {characterId && <RecordActions entity="characters" id={characterId} />}
       </div>
     </div>
   );

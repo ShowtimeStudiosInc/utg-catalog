@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TagLabel } from "@/components/tag-label";
 import { CustomEmojiText } from "@/components/custom-emoji-text";
 import { AddTagsDialog } from "@/components/add-tags-dialog";
+import { RecordActions } from "@/components/record-editor";
 
 async function fetchItem(id: string) {
   const response = await fetch(`/api/items/${id}`);
@@ -132,7 +132,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {itemTags?.map((tag: any) => (
+            {itemTags?.map((tag: { id: string; color: string; name: string; emojiFilename?: string | null }) => (
               <Badge 
                 key={tag.id}
                 className="deltarune-badge text-white"
@@ -199,17 +199,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
           )}
         </div>
 
-        <div className="flex gap-4 mt-8">
-          <Button className="deltarune-button text-white">
-            EDIT ITEM
-          </Button>
-          <Button 
-            className="deltarune-button text-white"
-            style={{ backgroundColor: '#e94560' }}
-          >
-            DELETE
-          </Button>
-        </div>
+        {itemId && <RecordActions entity="items" id={itemId} />}
       </div>
     </div>
   );
