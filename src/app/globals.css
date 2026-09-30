@@ -989,6 +989,7 @@ input[type="reset"]:disabled {
 .graph-profile {
   position: absolute;
   z-index: 12;
+  isolation: isolate;
   inset: 1rem 1rem 1rem auto;
   width: min(810px, calc(100% - 2rem));
   display: flex;
@@ -1006,7 +1007,7 @@ input[type="reset"]:disabled {
 .graph-profile::before,
 .graph-profile::after {
   position: absolute;
-  z-index: 2;
+  z-index: 0;
   content: "";
   pointer-events: none;
 }
@@ -1019,6 +1020,13 @@ input[type="reset"]:disabled {
   background-size: 59px 56px;
 }
 .graph-profile::after { display: none; }
+
+/* The nine-slice frame is a decorative overlay with opaque pixels. Keep it
+   below every interactive/content row so it cannot hide the profile itself. */
+.graph-profile > * {
+  position: relative;
+  z-index: 1;
+}
 
 .graph-profile-topline {
   min-height: 2rem;
