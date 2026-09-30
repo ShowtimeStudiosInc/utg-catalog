@@ -14,17 +14,24 @@ import { SoulTraitIcon } from "@/components/soul-trait-icon";
 export default function NewCharacterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSubmitError(null);
     
     const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const readText = (name: string) => formData.get(name)?.toString() ?? undefined;
+    const readNumber = (name: string) => {
+      const value = formData.get(name)?.toString().trim();
+      return value ? Number(value) : undefined;
+    };
     const characterData = {
       name: formData.get('name') as string,
       aliases: formData.get('aliases') as string,
       gender: formData.get('gender') as string,
-      age: formData.get('age') ? parseInt(formData.get('age') as string) : null,
+      age: readNumber('age'),
       species: formData.get('species') as string,
       groupOrganization: formData.get('groupOrganization') as string,
       role: formData.get('role') as string,
@@ -35,26 +42,29 @@ export default function NewCharacterPage() {
       dislikes: formData.get('dislikes') as string,
       fears: formData.get('fears') as string,
       traumas: formData.get('traumas') as string,
-      alignment: formData.get('alignment') as string,
-      soulTrait: formData.get('soulTrait') as string,
+      alignment: readText('alignment'),
+      sexuality: readText('sexuality'),
+      psychologicalOddities: readText('psychologicalOddities'),
+      soulTrait: (formData.get('soulTrait') as string) || undefined,
       mainAbility: formData.get('mainAbility') as string,
       mainAbilityType: formData.get('mainAbilityType') as string,
       mainAbilityDesc: formData.get('mainAbilityDesc') as string,
       subAbilities: formData.get('subAbilities') as string,
       weaknesses: formData.get('weaknesses') as string,
-      hp: formData.get('hp') ? parseInt(formData.get('hp') as string) : null,
-      wpr: formData.get('wpr') ? parseInt(formData.get('wpr') as string) : null,
-      atk: formData.get('atk') ? parseInt(formData.get('atk') as string) : null,
-      def: formData.get('def') ? parseInt(formData.get('def') as string) : null,
-      edr: formData.get('edr') ? parseInt(formData.get('edr') as string) : null,
-      spd: formData.get('spd') ? parseInt(formData.get('spd') as string) : null,
-      love: formData.get('love') ? parseInt(formData.get('love') as string) : null,
-      exp: formData.get('exp') ? parseInt(formData.get('exp') as string) : null,
+      hp: readNumber('hp'),
+      wpr: readNumber('wpr'),
+      atk: readNumber('atk'),
+      def: readNumber('def'),
+      edr: readNumber('edr'),
+      spd: readNumber('spd'),
+      love: readNumber('love'),
+      exp: readNumber('exp'),
       height: formData.get('height') as string,
       weight: formData.get('weight') as string,
       physicalOddities: formData.get('physicalOddities') as string,
-      appearanceImage: formData.get('appearanceImage') as string,
+      appearanceImage: (formData.get('appearanceImage') as string).trim() || undefined,
       trivia: formData.get('trivia') as string,
+      youtubeLinks: (formData.get('youtubeLinks') as string || '').split(/\r?\n/).map((link) => link.trim()).filter(Boolean),
     };
 
     try {
@@ -67,12 +77,13 @@ export default function NewCharacterPage() {
       if (response.ok) {
         router.push('/characters');
       } else {
-        alert('Failed to create character');
+        const result = await response.json().catch(() => null);
+        setSubmitError(result?.error || 'Failed to create character. Please check the fields and try again.');
         setLoading(false);
       }
     } catch (error) {
       console.error('Error creating character:', error);
-      alert('Failed to create character');
+      setSubmitError('Could not reach the catalog server. Please try again.');
       setLoading(false);
     }
   };
@@ -108,6 +119,9 @@ export default function NewCharacterPage() {
               </TabsTrigger>
               <TabsTrigger value="appearance" className="data-[state=active]:bg-[#f9d71c] data-[state=active]:text-black text-white data-[state=inactive]:text-[#a0a0a0]">
                 APPEARANCE
+              </TabsTrigger>
+              <TabsTrigger value="extras" className="data-[state=active]:bg-[#f9d71c] data-[state=active]:text-black text-white data-[state=inactive]:text-[#a0a0a0]">
+                EXTRAS
               </TabsTrigger>
             </TabsList>
 
@@ -190,6 +204,14 @@ export default function NewCharacterPage() {
                   <div>
                     <Label className="text-white">Traumas</Label>
                     <Textarea name="traumas" className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]" placeholder="Past traumas (optional)..." />
+                  </div>
+                  <div>
+                    <Label className="text-white">Sexuality</Label>
+                    <Input name="sexuality" className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]" placeholder="Sexuality (optional)" />
+                  </div>
+                  <div>
+                    <Label className="text-white">Psychological/Neurological Oddities</Label>
+                    <Textarea name="psychologicalOddities" className="deltarune-input text-white mt-1 min-h-24 bg-[#1a1a3a] border-[#4a4a8a]" placeholder="Optional psychological or neurological traits..." />
                   </div>
                   <div>
                     <Label className="text-white">Alignment</Label>
@@ -363,8 +385,23 @@ export default function NewCharacterPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="extras">
+              <Card className="deltarune-card">
+                <CardHeader>
+                  <CardTitle className="text-white">Character Audio</CardTitle>
+                  <CardDescription className="text-[#a0a0a0]">Add YouTube videos to play from this character’s profile. Put one video link on each line.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Label className="text-white" htmlFor="youtubeLinks">YouTube video links</Label>
+                  <Textarea id="youtubeLinks" name="youtubeLinks" className="deltarune-input mt-1 min-h-32 text-white" placeholder="https://www.youtube.com/watch?v=..." />
+                  <p className="mt-2 text-sm text-[#a0a0a0]">The profile starts the selected video when possible. Use Stop Audio to silence it.</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
 
+          {submitError && <p className="mt-6 border-2 border-[#ff647c] bg-black p-3 text-[#ffb4c0]" role="alert">{submitError}</p>}
           <div className="flex gap-4 mt-8">
             <Button type="submit" disabled={loading} className="deltarune-button text-white">
               {loading ? 'CREATING...' : 'CREATE CHARACTER'}

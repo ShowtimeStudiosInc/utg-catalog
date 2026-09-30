@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
 
 async function fetchItems() {
   const response = await fetch('/api/items');
@@ -67,7 +68,7 @@ export default function ItemsPage() {
             <Link key={item.id} href={`/items/${item.id}`}>
               <Card className="deltarune-card cursor-pointer h-full">
                 <CardHeader>
-                  <CardTitle className="text-white text-xl">{item.name}</CardTitle>
+                  <CardTitle className="text-white text-xl"><CustomEmojiText text={item.name} /></CardTitle>
                   <CardDescription className="text-[#a0a0a0] text-lg">
                     {item.type} • {item.value ? `${item.value} Aurum` : 'No value'}
                   </CardDescription>

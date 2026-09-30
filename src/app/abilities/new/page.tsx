@@ -9,10 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AbilityClassificationOption, AbilityClassificationPicker } from "@/components/ability-classification";
+import { ABILITY_CLASSES, ABILITY_TYPES } from "@/lib/ability-classification";
 
 export default function NewAbilityPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [abilityTypes, setAbilityTypes] = useState<string[]>([]);
+  const [abilityClasses, setAbilityClasses] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +33,8 @@ export default function NewAbilityPage() {
       statChanges: formData.get('statChanges') as string,
       weaknesses: formData.get('weaknesses') as string,
       rating: formData.get('rating') as string,
-      abilityType: formData.get('abilityType') as string,
-      abilityClass: formData.get('abilityClass') as string,
+      abilityType: abilityTypes,
+      abilityClass: abilityClasses,
     };
 
     try {
@@ -159,48 +163,24 @@ export default function NewAbilityPage() {
                         <SelectValue placeholder="Select rating" />
                       </SelectTrigger>
                       <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectItem value="Limited" className="text-white hover:bg-[#2a2a5a]">Limited</SelectItem>
-                        <SelectItem value="Minor" className="text-white hover:bg-[#2a2a5a]">Minor</SelectItem>
-                        <SelectItem value="Base" className="text-white hover:bg-[#2a2a5a]">Base</SelectItem>
-                        <SelectItem value="Enhanced" className="text-white hover:bg-[#2a2a5a]">Enhanced</SelectItem>
-                        <SelectItem value="Advanced" className="text-white hover:bg-[#2a2a5a]">Advanced</SelectItem>
-                        <SelectItem value="Perfect" className="text-white hover:bg-[#2a2a5a]">Perfect</SelectItem>
+                        <SelectItem value="Limited" label="Limited" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Limited" /></SelectItem>
+                        <SelectItem value="Minor" label="Minor" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Minor" /></SelectItem>
+                        <SelectItem value="Base" label="Base" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Base" /></SelectItem>
+                        <SelectItem value="Enhanced" label="Enhanced" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Enhanced" /></SelectItem>
+                        <SelectItem value="Advanced" label="Advanced" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Advanced" /></SelectItem>
+                        <SelectItem value="Perfect" label="Perfect" className="text-white hover:bg-[#2a2a5a]"><AbilityClassificationOption category="rating" value="Perfect" /></SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label className="text-white">Ability Type</Label>
-                    <Select name="abilityType">
-                      <SelectTrigger className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectItem value="Offensive" className="text-white hover:bg-[#2a2a5a]">Offensive</SelectItem>
-                        <SelectItem value="Defensive" className="text-white hover:bg-[#2a2a5a]">Defensive</SelectItem>
-                        <SelectItem value="Buffing" className="text-white hover:bg-[#2a2a5a]">Buffing</SelectItem>
-                        <SelectItem value="Debuffing" className="text-white hover:bg-[#2a2a5a]">Debuffing</SelectItem>
-                        <SelectItem value="Mobility" className="text-white hover:bg-[#2a2a5a]">Mobility</SelectItem>
-                        <SelectItem value="Utility" className="text-white hover:bg-[#2a2a5a]">Utility</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <p className="text-sm text-[#a0a0a0]">Choose all that apply.</p>
+                    <AbilityClassificationPicker category="type" options={ABILITY_TYPES} value={abilityTypes} onChange={setAbilityTypes} />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label className="text-white">Ability Class</Label>
-                    <Select name="abilityClass">
-                      <SelectTrigger className="deltarune-input text-white mt-1 bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectValue placeholder="Select class" />
-                      </SelectTrigger>
-                      <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                        <SelectItem value="Physical" className="text-white hover:bg-[#2a2a5a]">Physical</SelectItem>
-                        <SelectItem value="Summoning" className="text-white hover:bg-[#2a2a5a]">Summoning</SelectItem>
-                        <SelectItem value="Visions" className="text-white hover:bg-[#2a2a5a]">Visions</SelectItem>
-                        <SelectItem value="Shapeshifting" className="text-white hover:bg-[#2a2a5a]">Shapeshifting</SelectItem>
-                        <SelectItem value="Enchantments" className="text-white hover:bg-[#2a2a5a]">Enchantments</SelectItem>
-                        <SelectItem value="Alteration" className="text-white hover:bg-[#2a2a5a]">Alteration</SelectItem>
-                        <SelectItem value="Entropy" className="text-white hover:bg-[#2a2a5a]">Entropy</SelectItem>
-                        <SelectItem value="Elements" className="text-white hover:bg-[#2a2a5a]">Elements</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <p className="text-sm text-[#a0a0a0]">Choose all that apply.</p>
+                    <AbilityClassificationPicker category="class" options={ABILITY_CLASSES} value={abilityClasses} onChange={setAbilityClasses} />
                   </div>
                 </CardContent>
               </Card>

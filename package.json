@@ -1,6 +1,6 @@
 {
   "name": "cataloger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "electron.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "electron:build": "npm run electron:prepare && electron-builder --publish never",
     "electron:build:win": "npm run electron:prepare && electron-builder --win --publish never",
     "electron:build:mac": "npm run electron:prepare && electron-builder --mac --publish never",
-    "electron:build:linux": "npm run electron:prepare && electron-builder --linux --publish never"
+    "electron:build:linux": "npm run electron:prepare && electron-builder --linux --publish never",
+    "electron:release:win": "npm run electron:prepare && electron-builder --win --publish always"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -23,6 +24,7 @@
     "@xyflow/react": "^12.12.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
+    "electron-updater": "^6.8.9",
     "lucide-react": "^1.48.0",
     "next": "16.3.6",
     "prisma": "^5.22.0",
@@ -72,7 +74,12 @@
       "**/*.node",
       "node_modules/@prisma/engines/**"
     ],
-    "publish": null,
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "draft"
+      }
+    ],
     "win": {
       "icon": "assets/icon.ico",
       "target": "nsis"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { characterSchema } from '@/lib/validations';
+import { ZodError } from 'zod';
 
 // GET single character
 export async function GET(
@@ -48,6 +49,9 @@ export async function PUT(
 
     return NextResponse.json(character);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues[0]?.message ?? 'Invalid character data' }, { status: 400 });
+    }
     console.error('Error updating character:', error);
     return NextResponse.json({ error: 'Failed to update character' }, { status: 500 });
   }

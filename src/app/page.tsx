@@ -47,9 +47,10 @@ export default function Home() {
               href={href}
               style={{ animationDelay: `${index * 70}ms` }}
             >
-              <span className="destination-button__icon" aria-hidden="true">
-                <Icon size={19} strokeWidth={2.5} />
-              </span>
+                <span className="destination-button__icon" aria-hidden="true">
+                  <Icon size={19} strokeWidth={2.5} />
+                  <Image className="destination-button__selected-icon" src="/images/soul-traits/individuality.png" alt="" aria-hidden="true" width={19} height={19} />
+                </span>
               <span>{label}</span>
               <span className="destination-button__arrow" aria-hidden="true">›</span>
             </Link>

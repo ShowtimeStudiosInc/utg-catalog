@@ -30,19 +30,21 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { tagId } = body;
+    const bulk = Array.isArray(body.tagIds);
+    const tagIds: unknown[] = bulk ? body.tagIds : [body.tagId];
+    if (!tagIds.length || tagIds.some((tagId) => typeof tagId !== 'string' || !tagId)) {
+      return NextResponse.json({ error: 'Choose at least one valid tag.' }, { status: 400 });
+    }
+    const uniqueTagIds = [...new Set(tagIds as string[])];
+    const characterTags = await prisma.$transaction(uniqueTagIds.map((tagId) => prisma.characterTag.upsert({
+      where: { characterId_tagId: { characterId: id, tagId } },
+      update: {},
+      create: { characterId: id, tagId },
+      include: { tag: true },
+    })));
 
-    const characterTag = await prisma.characterTag.create({
-      data: {
-        characterId: id,
-        tagId,
-      },
-      include: {
-        tag: true,
-      },
-    });
-
-    return NextResponse.json(characterTag.tag, { status: 201 });
+    const result = characterTags.map((characterTag) => characterTag.tag);
+    return NextResponse.json(bulk ? result : result[0], { status: 201 });
   } catch (error) {
     console.error('Error adding tag to character:', error);
     return NextResponse.json({ error: 'Failed to add tag' }, { status: 500 });

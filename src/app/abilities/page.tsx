@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
+import { AbilityClassificationOption } from "@/components/ability-classification";
+import { parseAbilityClassification } from "@/lib/ability-classification";
 
 async function fetchAbilities() {
   const response = await fetch('/api/abilities');
@@ -65,9 +68,9 @@ export default function AbilitiesPage() {
             <Link key={ability.id} href={`/abilities/${ability.id}`}>
               <Card className="deltarune-card cursor-pointer h-full">
                 <CardHeader>
-                  <CardTitle className="text-white text-xl">{ability.name}</CardTitle>
+                  <CardTitle className="text-white text-xl"><CustomEmojiText text={ability.name} /></CardTitle>
                   <CardDescription className="text-[#a0a0a0] text-lg">
-                    {ability.complexity || 'Unknown'} • {ability.abilityType || 'Unknown'}
+                    {ability.complexity || 'Unknown'} • {parseAbilityClassification(ability.abilityType).join(', ') || 'Unknown'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -83,11 +86,13 @@ export default function AbilitiesPage() {
                         {ability.complexity}
                       </Badge>
                     )}
-                    {ability.abilityType && (
-                      <Badge className="deltarune-badge text-white" style={{ backgroundColor: '#0f3460', borderColor: '#0f3460' }}>
-                        {ability.abilityType}
+                    {parseAbilityClassification(ability.abilityType).map((value) => (
+                      <Badge key={`type-${value}`} className="deltarune-badge text-white" style={{ backgroundColor: '#0f3460', borderColor: '#0f3460' }}>
+                        <AbilityClassificationOption category="type" value={value} size={18} />
                       </Badge>
-                    )}
+                    ))}
+                    {ability.rating && <AbilityClassificationOption category="rating" value={ability.rating} size={24} />}
+                    {parseAbilityClassification(ability.abilityClass).map((value) => <AbilityClassificationOption key={`class-${value}`} category="class" value={value} size={24} />)}
                   </div>
                 </CardContent>
               </Card>

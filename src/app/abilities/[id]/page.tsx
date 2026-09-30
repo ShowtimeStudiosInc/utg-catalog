@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagLabel } from "@/components/tag-label";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
+import { AbilityClassificationImage, AbilityClassificationOption } from "@/components/ability-classification";
+import { parseAbilityClassification } from "@/lib/ability-classification";
+import { AddTagsDialog } from "@/components/add-tags-dialog";
 
 async function fetchAbility(id: string) {
   const response = await fetch(`/api/abilities/${id}`);
@@ -28,21 +30,17 @@ async function fetchAbilityTags(id: string) {
   return response.json();
 }
 
-async function addTagToAbility(abilityId: string, tagId: string) {
+async function addTagsToAbility(abilityId: string, tagIds: string[]) {
   const response = await fetch(`/api/abilities/${abilityId}/tags`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tagId }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tagIds }),
   });
-  if (!response.ok) throw new Error('Failed to add tag');
+  if (!response.ok) throw new Error('Failed to add the selected tags.');
   return response.json();
 }
 
 export default function AbilityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient();
   const [abilityId, setAbilityId] = useState<string | null>(null);
-  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [selectedTagId, setSelectedTagId] = useState('');
 
   useEffect(() => {
     params.then(p => setAbilityId(p.id));
@@ -59,19 +57,17 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
     queryFn: fetchTags,
   });
 
-  const { data: abilityTags, refetch: refetchAbilityTags } = useQuery({
+  const { data: abilityTags } = useQuery({
     queryKey: ['abilityTags', abilityId],
     queryFn: () => abilityId ? fetchAbilityTags(abilityId) : Promise.reject('No ID'),
     enabled: !!abilityId,
   });
 
   const addTagMutation = useMutation({
-    mutationFn: (tagId: string) => addTagToAbility(abilityId!, tagId),
+    mutationFn: (tagIds: string[]) => addTagsToAbility(abilityId!, tagIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['abilityTags', abilityId] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      setIsTagDialogOpen(false);
-      setSelectedTagId('');
     },
   });
 
@@ -102,11 +98,14 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
+  const abilityTypes = parseAbilityClassification(ability.abilityType);
+  const abilityClasses = parseAbilityClassification(ability.abilityClass);
+
   return (
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl text-white mb-2 retro-glow">{ability.name}</h1>
+          <h1 className="text-4xl text-white mb-2 retro-glow"><CustomEmojiText text={ability.name} /></h1>
           <div className="flex gap-2 flex-wrap">
             {ability.complexity && (
               <Badge 
@@ -119,76 +118,31 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                 {ability.complexity}
               </Badge>
             )}
-            {ability.abilityType && (
-              <Badge className="deltarune-badge text-white" style={{ backgroundColor: '#0f3460', borderColor: '#0f3460' }}>
-                {ability.abilityType}
+            {abilityTypes.map((value: string) => (
+              <Badge key={`type-${value}`} className="deltarune-badge text-white" style={{ backgroundColor: '#0f3460', borderColor: '#0f3460' }}>
+                <AbilityClassificationImage category="type" value={value} size={18} />
+                {value}
               </Badge>
-            )}
-            {ability.abilityClass && (
-              <Badge className="deltarune-badge text-white" style={{ backgroundColor: '#4ecdc4', borderColor: '#4ecdc4' }}>
-                {ability.abilityClass}
+            ))}
+            {abilityClasses.map((value: string) => (
+              <Badge key={`class-${value}`} className="deltarune-badge text-white" style={{ backgroundColor: '#4ecdc4', borderColor: '#4ecdc4' }}>
+                <AbilityClassificationImage category="class" value={value} size={18} />
+                {value}
               </Badge>
-            )}
+            ))}
           </div>
         </div>
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-xl">TAGS</h3>
-            <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="deltarune-button text-white" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
-                  + ADD TAG
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Add Tag to Ability</DialogTitle>
-                  <DialogDescription className="text-[#a0a0a0]">
-                    Select a tag to add to this ability
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Select
-                    value={selectedTagId}
-                    onValueChange={(value) => setSelectedTagId(value ?? '')}
-                  >
-                    <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a]">
-                      <SelectValue placeholder="Select a tag" />
-                    </SelectTrigger>
-                    <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                      {tags?.map((tag: any) => (
-                        <SelectItem key={tag.id} value={tag.id} className="text-white hover:bg-[#2a2a5a]">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-4 h-4 rounded"
-                              style={{ backgroundColor: tag.color }}
-                            />
-                            <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={() => setIsTagDialogOpen(false)}
-                      className="deltarune-button text-white"
-                      style={{ backgroundColor: '#e94560' }}
-                    >
-                      CANCEL
-                    </Button>
-                    <Button
-                      onClick={() => selectedTagId && addTagMutation.mutate(selectedTagId)}
-                      disabled={!selectedTagId || addTagMutation.isPending}
-                      className="deltarune-button text-white"
-                    >
-                      {addTagMutation.isPending ? 'ADDING...' : 'ADD'}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <AddTagsDialog
+              entityName="Ability"
+              tags={tags ?? []}
+              assignedTags={abilityTags ?? []}
+              onAdd={(tagIds) => addTagMutation.mutateAsync(tagIds)}
+              isPending={addTagMutation.isPending}
+            />
           </div>
           <div className="flex gap-2 flex-wrap">
             {abilityTags?.map((tag: any) => (
@@ -225,9 +179,9 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                 <CardTitle className="text-white">Main Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-[#a0a0a0] text-lg">
-                {ability.parentAbility && <p><strong className="text-white">Parent Ability:</strong> {ability.parentAbility}</p>}
+                {ability.parentAbility && <p><strong className="text-white">Parent Ability:</strong> <CustomEmojiText text={ability.parentAbility} /></p>}
                 {ability.description && <p><strong className="text-white">Description:</strong></p>}
-                {ability.description && <p className="mt-2">{ability.description}</p>}
+                {ability.description && <p className="mt-2 whitespace-pre-line"><CustomEmojiText text={ability.description} /></p>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -241,25 +195,25 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                 {ability.passives && (
                   <div>
                     <h3 className="text-white text-xl mb-3">Passives</h3>
-                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line">{ability.passives}</div>
+                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={ability.passives} /></div>
                   </div>
                 )}
                 {ability.skills && (
                   <div>
                     <h3 className="text-white text-xl mb-3">SKILLs</h3>
-                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line">{ability.skills}</div>
+                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={ability.skills} /></div>
                   </div>
                 )}
                 {ability.statChanges && (
                   <div>
                     <h3 className="text-white text-xl mb-3">Stat Changes</h3>
-                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line">{ability.statChanges}</div>
+                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={ability.statChanges} /></div>
                   </div>
                 )}
                 {ability.weaknesses && (
                   <div>
                     <h3 className="text-white text-xl mb-3">Weaknesses</h3>
-                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line">{ability.weaknesses}</div>
+                    <div className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={ability.weaknesses} /></div>
                   </div>
                 )}
               </CardContent>
@@ -273,10 +227,10 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
                 <CardDescription className="text-[#a0a0a0]">Your custom classification system</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-[#a0a0a0] text-lg">
-                {ability.rating && <p><strong className="text-white">Rating:</strong> {ability.rating}</p>}
-                {ability.abilityType && <p><strong className="text-white">Type:</strong> {ability.abilityType}</p>}
-                {ability.abilityClass && <p><strong className="text-white">Class:</strong> {ability.abilityClass}</p>}
-                {!ability.rating && !ability.abilityType && !ability.abilityClass && (
+                {ability.rating && <p className="ability-classification-line"><strong className="text-white">Rating:</strong> <AbilityClassificationOption category="rating" value={ability.rating} size={40} /></p>}
+                {abilityTypes.length > 0 && <div className="ability-classification-line"><strong className="text-white">Type:</strong> <span className="ability-classification-values">{abilityTypes.map((value: string) => <AbilityClassificationOption key={value} category="type" value={value} size={40} />)}</span></div>}
+                {abilityClasses.length > 0 && <div className="ability-classification-line"><strong className="text-white">Class:</strong> <span className="ability-classification-values">{abilityClasses.map((value: string) => <AbilityClassificationOption key={value} category="class" value={value} size={40} />)}</span></div>}
+                {!ability.rating && abilityTypes.length === 0 && abilityClasses.length === 0 && (
                   <p>No classification data provided.</p>
                 )}
               </CardContent>

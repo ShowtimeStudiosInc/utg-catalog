@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { ABILITY_CLASSES, ABILITY_TYPES } from '@/lib/ability-classification'
+import { getYouTubeVideoId } from '@/lib/youtube-video'
 
 // Character validation schema
 export const characterSchema = z.object({
@@ -62,6 +64,7 @@ export const characterSchema = z.object({
   // Custom sections
   trivia: z.string().optional(),
   ost: z.string().optional(), // JSON array
+  youtubeLinks: z.array(z.string().trim().url().refine((url) => getYouTubeVideoId(url) !== null, 'Use a valid YouTube video link.')).max(20, 'Add up to 20 YouTube links.').optional().transform((links) => links?.length ? JSON.stringify([...new Set(links)]) : undefined),
   extras: z.string().optional(),
 })
 
@@ -105,8 +108,8 @@ export const abilitySchema = z.object({
   
   // Optional user-specific classification system
   rating: z.enum(['Limited', 'Minor', 'Base', 'Enhanced', 'Advanced', 'Perfect']).optional(),
-  abilityType: z.enum(['Offensive', 'Defensive', 'Buffing', 'Debuffing', 'Mobility', 'Utility']).optional(),
-  abilityClass: z.enum(['Physical', 'Summoning', 'Visions', 'Shapeshifting', 'Enchantments', 'Alteration', 'Entropy', 'Elements']).optional(),
+  abilityType: z.union([z.enum(ABILITY_TYPES), z.array(z.enum(ABILITY_TYPES))]).optional(),
+  abilityClass: z.union([z.enum(ABILITY_CLASSES), z.array(z.enum(ABILITY_CLASSES))]).optional(),
 })
 
 // Tag validation schema

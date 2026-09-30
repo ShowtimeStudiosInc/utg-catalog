@@ -1,4 +1,5 @@
 const { app, BrowserWindow, dialog, ipcMain, Menu, Tray } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const net = require('node:net');
@@ -19,6 +20,87 @@ let mainWindow = null;
 let tray = null;
 let serverProcess = null;
 let appUrl = null;
+let updateCheckInProgress = false;
+
+function showUpdateDialog(options) {
+  return mainWindow ? dialog.showMessageBox(mainWindow, options) : dialog.showMessageBox(options);
+}
+
+function hasUpdateFeed() {
+  return app.isPackaged && fs.existsSync(path.join(process.resourcesPath, 'app-update.yml'));
+}
+
+async function checkForUpdates(showResult = false) {
+  if (!hasUpdateFeed()) {
+    if (showResult) {
+      await showUpdateDialog({
+        type: 'info',
+        title: 'Updates not configured',
+        message: 'Automatic updates will be available after UTG Catalog is connected to its GitHub Releases repository.',
+        buttons: ['OK'],
+      });
+    }
+    return { status: 'not-configured' };
+  }
+  if (updateCheckInProgress) return { status: 'checking' };
+
+  updateCheckInProgress = true;
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    if (!result) return { status: 'unavailable' };
+
+    if (result.isUpdateAvailable) {
+      return { status: 'downloading', version: result.updateInfo.version };
+    }
+
+    if (showResult) {
+      await showUpdateDialog({
+        type: 'info',
+        title: 'UTG Catalog is up to date',
+        message: `You are using version ${app.getVersion()}.`,
+        buttons: ['OK'],
+      });
+    }
+    return { status: 'up-to-date', version: app.getVersion() };
+  } catch (error) {
+    console.error('Could not check for UTG Catalog updates:', error);
+    if (showResult) {
+      await showUpdateDialog({
+        type: 'warning',
+        title: 'Update check failed',
+        message: 'UTG Catalog could not reach its update feed. Check your internet connection and try again later.',
+        buttons: ['OK'],
+      });
+    }
+    return { status: 'error' };
+  } finally {
+    updateCheckInProgress = false;
+  }
+}
+
+function configureAutoUpdates() {
+  if (!hasUpdateFeed()) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.on('error', (error) => console.error('UTG Catalog updater error:', error));
+  autoUpdater.on('update-downloaded', async (info) => {
+    const result = await showUpdateDialog({
+      type: 'info',
+      title: 'UTG Catalog update ready',
+      message: `Version ${info.version} has downloaded and is ready to install.`,
+      detail: 'Restart now to install it, or choose Later. The update will install when you next close the app.',
+      buttons: ['Restart and install', 'Later'],
+      defaultId: 0,
+      cancelId: 1,
+    });
+
+    if (result.response === 0) autoUpdater.quitAndInstall(false, true);
+  });
+
+  void checkForUpdates();
+  setInterval(() => void checkForUpdates(), 6 * 60 * 60 * 1000).unref();
+}
 
 function createDatabaseUrl(databasePath) {
   const normalizedPath = path.resolve(databasePath).replace(/\\/g, '/');
@@ -344,6 +426,7 @@ function createTray() {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: 'Open App', click: () => mainWindow?.show() },
+      { label: 'Check for Updates', click: () => void checkForUpdates(true) },
       { label: 'Quit', click: () => app.quit() },
     ]),
   );
@@ -351,6 +434,7 @@ function createTray() {
 }
 
 ipcMain.handle('get-app-data-path', () => app.getPath('userData'));
+ipcMain.handle('check-for-updates', () => checkForUpdates(true));
 
 app.whenReady()
   .then(async () => {
@@ -359,6 +443,7 @@ app.whenReady()
       : await startDevelopmentServer();
     createWindow();
     createTray();
+    configureAutoUpdates();
   })
   .catch((error) => {
     console.error('Failed to start UTG Catalog:', error);

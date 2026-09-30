@@ -5,9 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagLabel } from "@/components/tag-label";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
+import { AddTagsDialog } from "@/components/add-tags-dialog";
 
 async function fetchItem(id: string) {
   const response = await fetch(`/api/items/${id}`);
@@ -27,21 +27,17 @@ async function fetchItemTags(id: string) {
   return response.json();
 }
 
-async function addTagToItem(itemId: string, tagId: string) {
+async function addTagsToItem(itemId: string, tagIds: string[]) {
   const response = await fetch(`/api/items/${itemId}/tags`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tagId }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tagIds }),
   });
-  if (!response.ok) throw new Error('Failed to add tag');
+  if (!response.ok) throw new Error('Failed to add the selected tags.');
   return response.json();
 }
 
 export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient();
   const [itemId, setItemId] = useState<string | null>(null);
-  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [selectedTagId, setSelectedTagId] = useState('');
 
   useEffect(() => {
     params.then(p => setItemId(p.id));
@@ -58,19 +54,17 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
     queryFn: fetchTags,
   });
 
-  const { data: itemTags, refetch: refetchItemTags } = useQuery({
+  const { data: itemTags } = useQuery({
     queryKey: ['itemTags', itemId],
     queryFn: () => itemId ? fetchItemTags(itemId) : Promise.reject('No ID'),
     enabled: !!itemId,
   });
 
   const addTagMutation = useMutation({
-    mutationFn: (tagId: string) => addTagToItem(itemId!, tagId),
+    mutationFn: (tagIds: string[]) => addTagsToItem(itemId!, tagIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['itemTags', itemId] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      setIsTagDialogOpen(false);
-      setSelectedTagId('');
     },
   });
 
@@ -107,7 +101,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl text-white mb-2 retro-glow">{item.name}</h1>
+          <h1 className="text-4xl text-white mb-2 retro-glow"><CustomEmojiText text={item.name} /></h1>
           <div className="flex gap-2 flex-wrap">
             <Badge 
               className="deltarune-badge text-white"
@@ -129,60 +123,13 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-xl">TAGS</h3>
-            <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="deltarune-button text-white" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
-                  + ADD TAG
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Add Tag to Item</DialogTitle>
-                  <DialogDescription className="text-[#a0a0a0]">
-                    Select a tag to add to this item
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Select
-                    value={selectedTagId}
-                    onValueChange={(value) => setSelectedTagId(value ?? '')}
-                  >
-                    <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a]">
-                      <SelectValue placeholder="Select a tag" />
-                    </SelectTrigger>
-                    <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                      {tags?.map((tag: any) => (
-                        <SelectItem key={tag.id} value={tag.id} className="text-white hover:bg-[#2a2a5a]">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-4 h-4 rounded"
-                              style={{ backgroundColor: tag.color }}
-                            />
-                            <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={() => setIsTagDialogOpen(false)}
-                      className="deltarune-button text-white"
-                      style={{ backgroundColor: '#e94560' }}
-                    >
-                      CANCEL
-                    </Button>
-                    <Button
-                      onClick={() => selectedTagId && addTagMutation.mutate(selectedTagId)}
-                      disabled={!selectedTagId || addTagMutation.isPending}
-                      className="deltarune-button text-white"
-                    >
-                      {addTagMutation.isPending ? 'ADDING...' : 'ADD'}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <AddTagsDialog
+              entityName="Item"
+              tags={tags ?? []}
+              assignedTags={itemTags ?? []}
+              onAdd={(tagIds) => addTagMutation.mutateAsync(tagIds)}
+              isPending={addTagMutation.isPending}
+            />
           </div>
           <div className="flex gap-2 flex-wrap">
             {itemTags?.map((tag: any) => (
@@ -206,9 +153,9 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
               <CardTitle className="text-white">Main Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-[#a0a0a0] text-lg">
-              {item.description && <p><strong className="text-white">Description:</strong> {item.description}</p>}
-              {item.originalOwner && <p><strong className="text-white">Original Owner:</strong> {item.originalOwner}</p>}
-              {item.currentOwner && <p><strong className="text-white">Current Owner:</strong> {item.currentOwner}</p>}
+              {item.description && <p><strong className="text-white">Description:</strong> <CustomEmojiText text={item.description} /></p>}
+              {item.originalOwner && <p><strong className="text-white">Original Owner:</strong> <CustomEmojiText text={item.originalOwner} /></p>}
+              {item.currentOwner && <p><strong className="text-white">Current Owner:</strong> <CustomEmojiText text={item.currentOwner} /></p>}
             </CardContent>
           </Card>
 
@@ -230,9 +177,9 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
               <CardTitle className="text-white">Physical Properties</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-[#a0a0a0] text-lg">
-              {item.range && <p><strong className="text-white">Range:</strong> {item.range}</p>}
-              {item.weight && <p><strong className="text-white">Weight:</strong> {item.weight}</p>}
-              {item.physicalDamages && <p><strong className="text-white">Physical Damages:</strong> {item.physicalDamages}</p>}
+              {item.range && <p><strong className="text-white">Range:</strong> <CustomEmojiText text={item.range} /></p>}
+              {item.weight && <p><strong className="text-white">Weight:</strong> <CustomEmojiText text={item.weight} /></p>}
+              {item.physicalDamages && <p><strong className="text-white">Physical Damages:</strong> <CustomEmojiText text={item.physicalDamages} /></p>}
             </CardContent>
           </Card>
 

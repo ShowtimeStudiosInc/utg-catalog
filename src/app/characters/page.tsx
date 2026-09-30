@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SoulTraitIcon } from "@/components/soul-trait-icon";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
 
 async function fetchCharacters() {
   const response = await fetch('/api/characters');
@@ -69,7 +70,7 @@ export default function CharactersPage() {
             <Link key={character.id} href={`/characters/${character.id}`}>
               <Card className="deltarune-card cursor-pointer h-full">
                 <CardHeader>
-                  <CardTitle className="text-white text-xl">{character.name}</CardTitle>
+                  <CardTitle className="text-white text-xl"><CustomEmojiText text={character.name} /></CardTitle>
                   <CardDescription className="text-[#a0a0a0] text-lg">
                     {character.soulTrait || 'Unknown'} • {character.alignment || 'Unknown'}
                   </CardDescription>

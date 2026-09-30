@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { abilitySchema } from '@/lib/validations';
+import { serializeAbilityClassification } from '@/lib/ability-classification';
 
 // GET single ability
 export async function GET(
@@ -43,7 +44,11 @@ export async function PUT(
 
     const ability = await prisma.ability.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        abilityType: serializeAbilityClassification(validatedData.abilityType),
+        abilityClass: serializeAbilityClassification(validatedData.abilityClass),
+      },
     });
 
     return NextResponse.json(ability);

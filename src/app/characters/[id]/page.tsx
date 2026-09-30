@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagLabel } from "@/components/tag-label";
 import { SoulTraitIcon } from "@/components/soul-trait-icon";
+import { CustomEmojiText } from "@/components/custom-emoji-text";
+import { AddTagsDialog } from "@/components/add-tags-dialog";
+import { CharacterYoutubePlayer } from "@/components/character-youtube-player";
 
 async function fetchCharacter(id: string) {
   const response = await fetch(`/api/characters/${id}`);
@@ -29,21 +30,17 @@ async function fetchCharacterTags(id: string) {
   return response.json();
 }
 
-async function addTagToCharacter(characterId: string, tagId: string) {
+async function addTagsToCharacter(characterId: string, tagIds: string[]) {
   const response = await fetch(`/api/characters/${characterId}/tags`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tagId }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tagIds }),
   });
-  if (!response.ok) throw new Error('Failed to add tag');
+  if (!response.ok) throw new Error('Failed to add the selected tags.');
   return response.json();
 }
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient();
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [selectedTagId, setSelectedTagId] = useState('');
 
   useEffect(() => {
     params.then(p => setCharacterId(p.id));
@@ -60,19 +57,17 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     queryFn: fetchTags,
   });
 
-  const { data: characterTags, refetch: refetchCharacterTags } = useQuery({
+  const { data: characterTags } = useQuery({
     queryKey: ['characterTags', characterId],
     queryFn: () => characterId ? fetchCharacterTags(characterId) : Promise.reject('No ID'),
     enabled: !!characterId,
   });
 
   const addTagMutation = useMutation({
-    mutationFn: (tagId: string) => addTagToCharacter(characterId!, tagId),
+    mutationFn: (tagIds: string[]) => addTagsToCharacter(characterId!, tagIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['characterTags', characterId] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      setIsTagDialogOpen(false);
-      setSelectedTagId('');
     },
   });
 
@@ -110,7 +105,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     <div className="min-h-screen bg-[#1a1a2e] pixel-border">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl text-white mb-2 retro-glow">{character.name}</h1>
+          <h1 className="text-4xl text-white mb-2 retro-glow"><CustomEmojiText text={character.name} /></h1>
           <div className="flex gap-2 flex-wrap">
             {character.soulTrait && (
               <Badge 
@@ -137,60 +132,13 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-xl">TAGS</h3>
-            <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="deltarune-button text-white" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
-                  + ADD TAG
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Add Tag to Character</DialogTitle>
-                  <DialogDescription className="text-[#a0a0a0]">
-                    Select a tag to add to this character
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Select
-                    value={selectedTagId}
-                    onValueChange={(value) => setSelectedTagId(value ?? '')}
-                  >
-                    <SelectTrigger className="deltarune-input text-white bg-[#1a1a3a] border-[#4a4a8a]">
-                      <SelectValue placeholder="Select a tag" />
-                    </SelectTrigger>
-                    <SelectContent className="deltarune-card bg-[#1a1a3a] border-[#4a4a8a]">
-                      {tags?.map((tag: any) => (
-                        <SelectItem key={tag.id} value={tag.id} className="text-white hover:bg-[#2a2a5a]">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-4 h-4 rounded"
-                              style={{ backgroundColor: tag.color }}
-                            />
-                            <TagLabel name={tag.name} emojiFilename={tag.emojiFilename} />
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={() => setIsTagDialogOpen(false)}
-                      className="deltarune-button text-white"
-                      style={{ backgroundColor: '#e94560' }}
-                    >
-                      CANCEL
-                    </Button>
-                    <Button
-                      onClick={() => selectedTagId && addTagMutation.mutate(selectedTagId)}
-                      disabled={!selectedTagId || addTagMutation.isPending}
-                      className="deltarune-button text-white"
-                    >
-                      {addTagMutation.isPending ? 'ADDING...' : 'ADD'}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <AddTagsDialog
+              entityName="Character"
+              tags={tags ?? []}
+              assignedTags={characterTags ?? []}
+              onAdd={(tagIds) => addTagMutation.mutateAsync(tagIds)}
+              isPending={addTagMutation.isPending}
+            />
           </div>
           <div className="flex gap-2 flex-wrap">
             {characterTags?.map((tag: any) => (
@@ -255,7 +203,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                   <CardTitle className="text-white">Personality</CardTitle>
                 </CardHeader>
                 <CardContent className="text-[#a0a0a0] text-lg">
-                  {character.personality}
+                  <CustomEmojiText text={character.personality} />
                 </CardContent>
               </Card>
             )}
@@ -270,31 +218,43 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                 {character.personality && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Personality</h3>
-                    <p className="whitespace-pre-line">{character.personality}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.personality} /></p>
                   </div>
                 )}
                 {character.likes && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Likes</h3>
-                    <p className="whitespace-pre-line">{character.likes}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.likes} /></p>
                   </div>
                 )}
                 {character.dislikes && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Dislikes</h3>
-                    <p className="whitespace-pre-line">{character.dislikes}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.dislikes} /></p>
                   </div>
                 )}
                 {character.fears && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Fears</h3>
-                    <p className="whitespace-pre-line">{character.fears}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.fears} /></p>
                   </div>
                 )}
                 {character.traumas && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Traumas</h3>
-                    <p className="whitespace-pre-line">{character.traumas}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.traumas} /></p>
+                  </div>
+                )}
+                {character.sexuality && (
+                  <div>
+                    <h3 className="text-white text-xl mb-2">Sexuality</h3>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.sexuality} /></p>
+                  </div>
+                )}
+                {character.psychologicalOddities && (
+                  <div>
+                    <h3 className="text-white text-xl mb-2">Psychological/Neurological Oddities</h3>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.psychologicalOddities} /></p>
                   </div>
                 )}
               </CardContent>
@@ -344,21 +304,21 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               <CardContent className="space-y-4 text-[#a0a0a0] text-lg">
                 {character.mainAbility && (
                   <div>
-                    <p><strong className="text-white">Main Ability:</strong> {character.mainAbility}</p>
+                    <p><strong className="text-white">Main Ability:</strong> <CustomEmojiText text={character.mainAbility} /></p>
                     {character.mainAbilityType && <p><strong className="text-white">Type:</strong> {character.mainAbilityType}</p>}
-                    {character.mainAbilityDesc && <p className="mt-2">{character.mainAbilityDesc}</p>}
+                    {character.mainAbilityDesc && <p className="mt-2 whitespace-pre-line"><CustomEmojiText text={character.mainAbilityDesc} /></p>}
                   </div>
                 )}
                 {character.subAbilities && (
                   <div>
                     <p><strong className="text-white">Sub-Abilities:</strong></p>
-                    <p>{character.subAbilities}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.subAbilities} /></p>
                   </div>
                 )}
                 {character.weaknesses && (
                   <div>
                     <p><strong className="text-white">Weaknesses:</strong></p>
-                    <p>{character.weaknesses}</p>
+                    <p className="whitespace-pre-line"><CustomEmojiText text={character.weaknesses} /></p>
                   </div>
                 )}
               </CardContent>
@@ -410,7 +370,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                 <div className="text-[#a0a0a0] text-lg space-y-2">
                   {character.height && <p><strong className="text-white">Height:</strong> {character.height}</p>}
                   {character.weight && <p><strong className="text-white">Weight:</strong> {character.weight}</p>}
-                  {character.physicalOddities && <p><strong className="text-white">Physical Oddities:</strong> {character.physicalOddities}</p>}
+                  {character.physicalOddities && <p><strong className="text-white">Physical Oddities:</strong> <CustomEmojiText text={character.physicalOddities} /></p>}
                 </div>
               </CardContent>
             </Card>
@@ -422,25 +382,26 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                 <CardTitle className="text-white">Extras</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <CharacterYoutubePlayer youtubeLinks={character.youtubeLinks} characterName={character.name} />
                 {character.trivia && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Trivia</h3>
-                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line">{character.trivia}</p>
+                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={character.trivia} /></p>
                   </div>
                 )}
                 {character.ost && (
                   <div>
                     <h3 className="text-white text-xl mb-2">OST (Original Soundtrack)</h3>
-                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line">{character.ost}</p>
+                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={character.ost} /></p>
                   </div>
                 )}
                 {character.extras && (
                   <div>
                     <h3 className="text-white text-xl mb-2">Additional Notes</h3>
-                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line">{character.extras}</p>
+                    <p className="text-[#a0a0a0] text-lg whitespace-pre-line"><CustomEmojiText text={character.extras} /></p>
                   </div>
                 )}
-                {!character.trivia && !character.ost && !character.extras && (
+                {!character.trivia && !character.ost && !character.extras && !character.youtubeLinks && (
                   <p className="text-[#a0a0a0] text-lg">No extra information</p>
                 )}
               </CardContent>
